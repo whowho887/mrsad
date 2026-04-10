@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
 
+<link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+  <link rel="preload" as="video" href="https://res.cloudinary.com/dxshrigz4/video/upload/q_auto,f_auto,w_1280/v1775851883/mrsad_video_ninbgy.mp4" type="video/mp4" />
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
@@ -119,12 +122,12 @@
 
     #glitch { position:fixed;inset:0;z-index:9998;background:rgba(0,242,255,0.06);pointer-events:none;opacity:0; }
 
-    /* ═══════════════════════════════════════════════════
-       INTRO VIDEO
+/* ═══════════════════════════════════════════════════
+       INTRO VIDEO & PERFORMANCE OPTIMIZATION
     ═══════════════════════════════════════════════════ */
     #intro-video-wrap {
       position: fixed; inset: 0; z-index: 9900;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0,0,0,0.9);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 1.6rem;
       opacity: 0; pointer-events: none;
@@ -135,7 +138,7 @@
 
     #intro-vid-box {
       position: relative;
-      width: min(860px, 88vw);
+      width: min(1000px, 90vw);
       aspect-ratio: 16/9;
       border: 1px solid rgba(0,242,255,0.22);
       box-shadow: 0 0 0 1px rgba(0,242,255,0.06) inset,
@@ -159,7 +162,6 @@
       letter-spacing:0.3em; color:var(--warn); text-align:center;
       background:rgba(0,0,0,0.7); animation:blink 1.5s infinite;
     }
-    #vid-buffering.show { display:flex; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
     #skip-vid {
@@ -180,7 +182,12 @@
     }
     #sound-btn:hover { background: rgba(0,242,255,0.12); border-color: var(--c); }
 
-
+    /* 🔴 الكود السحري: إخفاء الخلفيات المعقدة أثناء تشغيل الفيديو لمنع التقطيع نهائياً */
+    body.playing-video #gl-canvas,
+    body.playing-video #pt-canvas,
+    body.playing-video #hex-canvas {
+      display: none !important;
+    }
 
 
     /* ═══════════════════════════════════════════════════
@@ -391,19 +398,6 @@ nav {
       position: relative; z-index: 2;
     } 
 
-/* الأقواس الجانبية وحالتها المبدئية المخفية */
-.tb { position:absolute; border-color:rgba(0,242,255,0.5); border-style:solid; opacity:0; }
-.tb-tl { top:-8px; left:-14px; width:24px; height:24px; border-width:2px 0 0 2px; }
-.tb-tr { top:-8px; right:-14px; width:24px; height:24px; border-width:2px 2px 0 0; }
-.tb-bl { bottom:-8px; left:-14px; width:24px; height:24px; border-width:0 0 2px 2px; }
-.tb-br { bottom:-8px; right:-14px; width:24px; height:24px; border-width:0 2px 2px 0; }
-
-/* الأقواس الجانبية وحالتها المبدئية المخفية */
-.tb { position:absolute; border-color:rgba(0,242,255,0.5); border-style:solid; opacity:0; }
-.tb-tl { top:-8px; left:-14px; width:24px; height:24px; border-width:2px 0 0 2px; }
-.tb-tr { top:-8px; right:-14px; width:24px; height:24px; border-width:2px 2px 0 0; }
-.tb-bl { bottom:-8px; left:-14px; width:24px; height:24px; border-width:0 0 2px 2px; }
-.tb-br { bottom:-8px; right:-14px; width:24px; height:24px; border-width:0 2px 2px 0; }
     /* Arabic subtitle below MRSAD title */
     .hero-ar-title {
       font-family: 'Noto Kufi Arabic', sans-serif; font-weight: 700;
@@ -936,6 +930,7 @@ nav {
     .l-ok   { color:rgba(0,220,120,0.8); }
     .l-warn { color:rgba(255,185,50,0.8); }
     .l-inf  { color:rgba(0,242,255,0.55); }
+    .l-err  { color:rgba(255,68,85,0.8); }
     .blink { display:inline-block;width:6px;height:0.8em;background:var(--c);animation:blink 1s step-end infinite;vertical-align:text-bottom; }
 
     /* Status panel */
@@ -1260,17 +1255,26 @@ nav {
   </div>
   <div id="glitch"></div>
 
-  <!-- ═══════════════ INTRO VIDEO ═══════════════ -->
-  <div id="intro-video-wrap">
+<div id="intro-video-wrap">
     <div id="intro-vid-box">
-      <video id="intro-vid" playsinline preload="auto">
-        <source src="https://res.cloudinary.com/dxshrigz4/video/upload/q_auto/v1775851883/mrsad_video_ninbgy.mp4" type="video/mp4">
+<video 
+    id="intro-vid"
+    muted
+    playsinline
+    webkit-playsinline
+    preload="auto"
+    controlslist="nodownload"
+    disablepictureinpicture
+  >
+        <source src="https://res.cloudinary.com/dxshrigz4/video/upload/q_auto:eco,f_auto,w_1280,vc_auto/v1775851883/mrsad_video_ninbgy.mp4" type="video/mp4">
       </video>
       <div id="vid-buffering">[ BUFFERING... ]<br><span>LOADING STREAM</span></div>
       <button id="sound-btn" title="Click for sound">🔇</button>
     </div>
     <button id="skip-vid">[ SKIP SEQUENCE ]</button>
   </div>
+
+  <!-- intro video is above ↑ -->
 
   <!-- CURSOR -->
   <div id="cur-o"><div class="cr"><span class="ct ct-tl"></span><span class="ct ct-tr"></span><span class="ct ct-bl"></span><span class="ct ct-br"></span></div></div>
@@ -1361,11 +1365,19 @@ nav {
     <a href="#terminal-sec">Status</a>
   </div>
 
-
+  <div style="display:flex;align-items:center;gap:0.6rem;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.46rem;letter-spacing:0.2em;color:rgba(0,242,255,0.28);text-transform:uppercase;border:1px solid rgba(0,242,255,0.08);padding:0.18rem 0.55rem;background:rgba(0,242,255,0.02);">SENTINEL ACTIVE</div>
+    <span class="sdot"></span>
+  </div>
 </nav>
 
   <!-- ═══════════════ HERO ═══════════════ -->
   <section id="hero" class="cl">
+
+    <div class="hero-badge">
+      <span class="sdot" style="width:4px;height:4px;box-shadow:none;"></span>
+      Monitoring Runtime Sentinel &amp; Autonomous Defense &nbsp;//&nbsp; Alpha
+    </div>
 
     <div class="hcorner hc-tl">
       NODE / MRSAD-CORE<br>
@@ -1916,9 +1928,10 @@ nav {
   /* ════════════════════════════════
      1. BOOT SEQUENCE + VIDEO
   ════════════════════════════════ */
+/* ════════════════════════════════
+     1. BOOT SEQUENCE + VIDEO
+  ════════════════════════════════ */
   (function initBoot() {
-
-    /* ── عناصر الـ DOM ── */
     var lines   = [1,2,3,4,5,6,7,8].map(function(i){ return document.getElementById('bl-'+i); });
     var fin     = document.getElementById('boot-fin');
     var bar     = document.getElementById('boot-bar');
@@ -1930,19 +1943,13 @@ nav {
     var skipBtn = document.getElementById('skip-vid');
     var bufMsg  = document.getElementById('vid-buffering');
     var barVal  = 0;
-    var videoDone = false;   /* حماية من استدعاء finishVideo مرتين */
+    var videoDone = false;
 
-    /* ══════════════════════════════════════
-       انيميشن سطور الـ Boot
-    ══════════════════════════════════════ */
     lines.forEach(function(el, i) {
       if (!el) return;
       setTimeout(function(){ el.classList.add('on'); }, 350 + i * 310);
     });
 
-    /* ══════════════════════════════════════
-       شريط التقدم — يبدأ بعد آخر سطر
-    ══════════════════════════════════════ */
     setTimeout(function() {
       if (fin) fin.style.opacity = '1';
       (function fill() {
@@ -1954,9 +1961,6 @@ nav {
       })();
     }, 350 + 8 * 310 + 400);
 
-    /* ══════════════════════════════════════
-       اكتمل الـ Boot → glitch → فيديو
-    ══════════════════════════════════════ */
     function onBootComplete() {
       setTimeout(function() {
         if (glitch) {
@@ -1972,28 +1976,24 @@ nav {
       }, 700);
     }
 
-    /* ══════════════════════════════════════
-       عرض الفيديو وتشغيله
-    ══════════════════════════════════════ */
     function showVideo() {
       if (!vidWrap || !vid) { startMainSite(); return; }
 
+      // Switch to full preload now that user has seen boot screen
+      vid.preload = 'auto';
+
+      // إيقاف الـ GPU عن معالجة الخلفيات أثناء الفيديو
+      document.body.classList.add('playing-video');
+
       var soundBtn = document.getElementById('sound-btn');
 
-      /* أظهر الـ overlay */
       vidWrap.classList.add('active');
       vid.classList.add('ready');
 
-      /* ═══ زر التخطي ═══ */
       if (skipBtn) skipBtn.addEventListener('click', finishVideo, { once: true });
-
-      /* ═══ انتهى الفيديو ═══ */
       vid.addEventListener('ended', finishVideo, { once: true });
-
-      /* ═══ خطأ تحميل ═══ */
       vid.addEventListener('error', function() { finishVideo(); }, { once: true });
 
-      /* ═══ زر الصوت ═══ */
       if (soundBtn) {
         soundBtn.addEventListener('click', function() {
           vid.muted = !vid.muted;
@@ -2002,63 +2002,64 @@ nav {
         });
       }
 
-      /* ══════════════════════════════════════════
-         تشغيل الفيديو من الصفر بعد Boot مباشرة
-         — نحاول بصوت أولاً، إن رفض المتصفح نشغّل مكتوماً
-      ══════════════════════════════════════════ */
-      vid.currentTime = 0;           // ← إعادة للبداية دائماً
-      vid.muted  = false;
+      vid.currentTime = 0;
+      vid.muted  = true;
       vid.volume = 1;
+      // Show buffering until enough data is loaded
+      bufMsg.style.display = 'flex';
+      vid.classList.remove('ready');
 
-      var p = vid.play();
-
-      if (p && typeof p.then === 'function') {
-        p.then(function() {
-          /* ✅ يعمل بصوت */
-          if (soundBtn) soundBtn.textContent = '🔊';
-        }).catch(function() {
-          /* 🔇 الصوت محظور — نشغّل مكتوماً (الفيديو يعمل دائماً) */
-          vid.muted = true;
-          if (soundBtn) soundBtn.textContent = '🔇';
-          vid.currentTime = 0;
-          vid.play().catch(function() { finishVideo(); });
-        });
+      function startPlayback() {
+        bufMsg.style.display = 'none';
+        vid.classList.add('ready');
+        var p = vid.play();
+        if (p && typeof p.then === 'function') {
+          p.catch(function() { finishVideo(); });
+        }
       }
 
-      /* صمام أمان 30 ثانية */
+      // canplaythrough = enough buffered to play without stuttering
+      if (vid.readyState >= 4) {
+        startPlayback();
+      } else {
+        vid.addEventListener('canplaythrough', function() {
+          startPlayback();
+        }, { once: true });
+        // Fallback: if canplaythrough takes >8s just start anyway
+        setTimeout(function() {
+          if (vid.paused) startPlayback();
+        }, 8000);
+      }
+
+      // تجاوز تلقائي بعد 30 ثانية في أسوأ الحالات
       setTimeout(function() { finishVideo(); }, 30000);
     }
 
-    /* ══════════════════════════════════════
-       إنهاء الفيديو → ادخل الموقع
-    ══════════════════════════════════════ */
     function finishVideo() {
-      if (videoDone) return;   /* منع التكرار */
+      if (videoDone) return;
       videoDone = true;
+
+      // إعادة تشغيل الخلفيات
+      document.body.classList.remove('playing-video');
+
       if (vidWrap) {
+        vidWrap.style.transition = 'opacity 1.2s cubic-bezier(0.4,0,0.2,1)';
         vidWrap.style.opacity = '0';
         vidWrap.style.pointerEvents = 'none';
       }
       setTimeout(function() {
-        if (vid) vid.pause();
+        if (vid) { vid.pause(); vid.src = ''; } // free memory
         startMainSite();
-      }, 1200);
+      }, 1300);
     }
 
-    /* ══════════════════════════════════════
-       بدء الموقع الرئيسي
-    ══════════════════════════════════════ */
     function startMainSite() {
       document.body.classList.add('loaded');
       initHeroTimeline();
     }
-
   })();
 
   /* ════════════════════════════════
-     2. HERO TIMELINE
-  ════════════════════════════════ */
-/* ════════════════════════════════
      2. HERO TIMELINE & TEXT SCRAMBLE
   ════════════════════════════════ */
   
@@ -2804,11 +2805,31 @@ nav {
 
   /* ════════════════════════════════
      14. MANIFESTO WORDS
-  
-
-  /* ════════════════════════════════
-     15. LIVE TERMINAL FEED
   ════════════════════════════════ */
+  (function initManiWords() {
+    var raw = 'When threats form in <em>silence</em> — inside the runtime, before the first packet is sent, before the first exploit completes — <em>MRSAD</em> is already there. Watching. Deciding. Acting.';
+    var el = document.getElementById('mani-body');
+    if (!el) return;
+
+    // Split preserving <em> tags
+    var html = '';
+    var parts = raw.split(/(<em>.*?<\/em>)/g);
+    parts.forEach(function(part) {
+      if (part.startsWith('<em>') && part.endsWith('</em>')) {
+        var inner = part.slice(4, -5);
+        inner.split(/\s+/).forEach(function(w) {
+          if (!w) return;
+          html += '<em><span class="mw">' + w + '</span></em> ';
+        });
+      } else {
+        part.split(/\s+/).forEach(function(w) {
+          if (!w) return;
+          html += '<span class="mw">' + w + '</span> ';
+        });
+      }
+    });
+    el.innerHTML = html;
+  })();
   (function initLiveTerminal() {
     const wrap = document.getElementById('log-wrap');
     const liveLn = document.getElementById('live-cursor');

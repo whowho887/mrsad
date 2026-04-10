@@ -1,0 +1,2927 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MRSAD</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════════ */
+    :root {
+      --c:     #00f2ff;
+      --cd:    #00a8b5;
+      --teal:  #0ef0d8;
+      --thr:   #ff4455;
+      --ok:    #00dc78;
+      --warn:  #ffb932;
+      --st:    #8a9bb0;
+      --gs:    0 0 14px rgba(0,242,255,0.35);
+      --gm:    0 0 40px rgba(0,242,255,0.18);
+      --gl:    0 0 90px rgba(0,242,255,0.1);
+      --glass-bg: rgba(255,255,255,0.028);
+      --glass-border: rgba(0,242,255,0.09);
+      --glass-blur: blur(22px);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #000;
+      color: #d8e2ea;
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+      direction: ltr;
+      
+ /* override per element */
+    }
+
+    /* ═══════════════════════════════════════════════════
+       BOOT SCREEN
+    ═══════════════════════════════════════════════════ */
+    #boot {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 1.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    #boot.out { opacity: 0; pointer-events: none; }
+
+    .boot-inner { width: min(760px, 90vw); }
+
+    .boot-sig {
+      display: flex; align-items: center; gap: 1.4rem; margin-bottom: 1.8rem;
+    }
+    .boot-sig-bar {
+      width: 2px; height: 4rem;
+      background: linear-gradient(180deg, transparent, var(--c), transparent);
+      box-shadow: 0 0 14px var(--c); flex-shrink: 0;
+    }
+    .boot-sig-name {
+      font-family: 'Playfair Display', serif; font-weight: 900;
+      font-size: clamp(1.8rem, 5vw, 2.8rem); letter-spacing: 0.1em;
+      background: linear-gradient(140deg, #fff 20%, var(--c) 85%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .boot-sig-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.56rem; color: rgba(0,242,255,0.28);
+      letter-spacing: 0.28em; text-transform: uppercase; margin-top: 0.3rem;
+    }
+    .boot-sig-ar {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-size: 0.72rem; color: rgba(0,242,255,0.2);
+      margin-top: 0.2rem; direction: rtl;
+    }
+
+    .boot-divider { width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,242,255,0.14),transparent);margin-bottom:1.6rem; }
+
+    .boot-ln {
+      display: flex; align-items: flex-start; gap: 0.9rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(0.56rem, 1.1vw, 0.72rem); line-height: 2;
+      opacity: 0; transform: translateX(-12px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .boot-ln.on { opacity: 1; transform: none; }
+    .bk { color: rgba(0,220,120,0.9); flex-shrink:0; min-width: 56px; }
+    .bw { color: rgba(255,185,50,0.9); flex-shrink:0; min-width: 56px; }
+    .be { color: rgba(255,68,68,0.9); flex-shrink:0; min-width: 56px; }
+    .bt { color: rgba(138,155,176,0.68); }
+    .ba { color: var(--c); }
+    .bs { color: rgba(255,185,50,0.75); }
+
+    .boot-fin {
+      margin-top: 2rem; padding-top: 1.2rem;
+      border-top: 1px solid rgba(0,242,255,0.08);
+      opacity: 0; transition: opacity 0.5s ease;
+    }
+    .boot-status {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(0.68rem, 1.8vw, 0.94rem);
+      letter-spacing: 0.32em; font-weight: 500;
+      color: var(--c); text-transform: uppercase;
+    }
+    .boot-bar-bg { margin-top:0.9rem;height:1px;background:rgba(255,255,255,0.04);overflow:hidden;position:relative; }
+    .boot-bar-fill { height:100%;background:linear-gradient(90deg,transparent,var(--c));box-shadow:0 0 10px var(--c);width:0;transition:width 0.06s linear; }
+    .boot-bar-pct { position:absolute;right:0;top:-1.1rem;font-family:'IBM Plex Mono',monospace;font-size:0.48rem;letter-spacing:0.2em;color:rgba(0,242,255,0.35);transition:right 0.06s linear; }
+    .boot-class { margin-top:0.5rem;font-family:'IBM Plex Mono',monospace;font-size:0.48rem;letter-spacing:0.22em;color:rgba(138,155,176,0.2);text-transform:uppercase; }
+
+    #glitch { position:fixed;inset:0;z-index:9998;background:rgba(0,242,255,0.06);pointer-events:none;opacity:0; }
+
+    /* ═══════════════════════════════════════════════════
+       INTRO VIDEO
+    ═══════════════════════════════════════════════════ */
+    #intro-video-wrap {
+      position: fixed; inset: 0; z-index: 9900;
+      background: rgba(0,0,0,0.85);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 1.6rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 1.2s cubic-bezier(0.4,0,0.2,1);
+      backdrop-filter: blur(6px);
+    }
+    #intro-video-wrap.active { opacity: 1; pointer-events: all; }
+
+    #intro-vid-box {
+      position: relative;
+      width: min(860px, 88vw);
+      aspect-ratio: 16/9;
+      border: 1px solid rgba(0,242,255,0.22);
+      box-shadow: 0 0 0 1px rgba(0,242,255,0.06) inset,
+                  0 0 80px rgba(0,242,255,0.12),
+                  0 30px 100px rgba(0,0,0,0.8);
+      overflow: hidden; background: #000;
+    }
+    #intro-vid-box::before { content:''; position:absolute; top:0; left:0; width:18px; height:18px; border:2px solid rgba(0,242,255,0.6); border-right:none; border-bottom:none; z-index:2; }
+    #intro-vid-box::after  { content:''; position:absolute; bottom:0; right:0; width:18px; height:18px; border:2px solid rgba(0,242,255,0.6); border-left:none; border-top:none; z-index:2; }
+
+    #intro-vid {
+      width:100%; height:100%; object-fit:cover;
+      opacity:0; transition:opacity 0.8s ease; display:block;
+    }
+    #intro-vid.ready { opacity:1; }
+
+    #vid-buffering {
+      position:absolute; inset:0;
+      display:none; align-items:center; justify-content:center; flex-direction:column;
+      font-family:'IBM Plex Mono',monospace; font-size:0.65rem;
+      letter-spacing:0.3em; color:var(--warn); text-align:center;
+      background:rgba(0,0,0,0.7); animation:blink 1.5s infinite;
+    }
+    #vid-buffering.show { display:flex; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    #skip-vid {
+      font-family:'IBM Plex Mono',monospace; font-size:0.48rem; letter-spacing:0.3em;
+      padding:0.55rem 1.8rem; background:transparent;
+      border:1px solid rgba(0,242,255,0.2); color:rgba(0,242,255,0.45);
+      cursor:pointer; transition:all 0.3s; white-space:nowrap;
+    }
+    #skip-vid:hover { border-color:var(--c); color:var(--c); background:rgba(0,242,255,0.05); }
+
+    #sound-btn {
+      position: absolute; top: 12px; right: 12px; z-index: 10;
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(0,242,255,0.3);
+      color: rgba(0,242,255,0.8); font-size: 1.1rem;
+      width: 36px; height: 36px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s; border-radius: 2px;
+    }
+    #sound-btn:hover { background: rgba(0,242,255,0.12); border-color: var(--c); }
+
+
+
+
+    /* ═══════════════════════════════════════════════════
+       CUSTOM CURSOR
+    ═══════════════════════════════════════════════════ */
+    #cur-o {
+      position: fixed; top:0; left:0; z-index:9990;
+      width: 48px; height: 48px; pointer-events: none;
+      transform: translate(-50%,-50%);
+      transition: transform 0.08s ease, opacity 0.3s;
+    }
+    #cur-i {
+      position: fixed; top:0; left:0; z-index:9990;
+      width: 4px; height: 4px; pointer-events: none;
+      transform: translate(-50%,-50%);
+      background: var(--c); border-radius: 50%;
+      box-shadow: 0 0 8px var(--c);
+      transition: transform 0.06s linear;
+    }
+    .cr { width:100%;height:100%;border:1px solid rgba(0,242,255,0.38);border-radius:50%;position:relative; }
+    .cr::before { content:'';position:absolute;top:50%;left:50%;width:1px;height:13px;background:rgba(0,242,255,0.32);transform:translate(-50%,-50%); }
+    .cr::after  { content:'';position:absolute;top:50%;left:50%;width:13px;height:1px;background:rgba(0,242,255,0.32);transform:translate(-50%,-50%); }
+    .ct { position:absolute;width:7px;height:7px;border-color:rgba(0,242,255,0.55);border-style:solid; }
+    .ct-tl { top:0;left:0;border-width:1.5px 0 0 1.5px; }
+    .ct-tr { top:0;right:0;border-width:1.5px 1.5px 0 0; }
+    .ct-bl { bottom:0;left:0;border-width:0 0 1.5px 1.5px; }
+    .ct-br { bottom:0;right:0;border-width:0 1.5px 1.5px 0; }
+    body.hv #cur-o { transform:translate(-50%,-50%) scale(2);opacity:0.28; }
+    body.cl #cur-o { transform:translate(-50%,-50%) scale(0.68); }
+
+    /* ═══════════════════════════════════════════════════
+       BACKGROUNDS
+    ═══════════════════════════════════════════════════ */
+    #gl-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      width: 100%; height: 100%; pointer-events: none;
+    }
+    #pt-canvas {
+      position: fixed; inset: 0; z-index: 1;
+      width: 100%; height: 100%; pointer-events: none;
+    }
+
+    /* Hexagonal grid overlay */
+    #hex-canvas {
+      position: fixed; inset: 0; z-index: 2;
+      width: 100%; height: 100%; pointer-events: none;
+      opacity: 0.22;
+    }
+
+    /* Film grain */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 3;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.046'/%3E%3C/svg%3E");
+      background-size: 220px; pointer-events: none;
+      opacity: 0.2; mix-blend-mode: overlay;
+    }
+    /* Vignette */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 3;
+      background: radial-gradient(ellipse at 50% 42%, transparent 28%, rgba(0,0,0,0.88) 100%);
+      pointer-events: none;
+    }
+    /* Scanline */
+    #scanline {
+      position: fixed; top: -2px; left: 0;
+      width: 100%; height: 2px; z-index: 8800; pointer-events: none;
+      background: linear-gradient(180deg, transparent, rgba(0,242,255,0.08) 40%, rgba(0,242,255,0.18) 50%, rgba(0,242,255,0.08) 60%, transparent);
+      box-shadow: 0 0 18px 5px rgba(0,242,255,0.04);
+      animation: scan 13s linear infinite;
+    }
+    @keyframes scan { 0%{top:-2px} 100%{top:100vh} }
+
+    /* Orbs */
+    .orb { position:fixed;border-radius:50%;filter:blur(130px);pointer-events:none;z-index:1; }
+    .orb-a { width:650px;height:650px;top:-200px;left:-200px;background:radial-gradient(circle,rgba(0,242,255,0.042),transparent 70%);animation:op 12s ease-in-out infinite; }
+    .orb-b { width:500px;height:500px;bottom:50px;right:-150px;background:radial-gradient(circle,rgba(14,240,216,0.032),transparent 70%);animation:op 10s ease-in-out infinite -4s; }
+    .orb-c { width:400px;height:400px;top:55%;left:52%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(0,180,204,0.025),transparent 70%);animation:op 14s ease-in-out infinite -8s; }
+    @keyframes op { 0%,100%{opacity:.38} 50%{opacity:1} }
+
+    /* ═══════════════════════════════════════════════════
+       LAYOUT HELPERS
+    ═══════════════════════════════════════════════════ */
+    .cl { position:relative; z-index:10; }
+
+    .slabel {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.54rem; letter-spacing: 0.46em;
+      color: rgba(0,242,255,0.28); text-transform: uppercase;
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
+      direction: ltr;
+    }
+    .slabel::before { content:'';width:30px;height:1px;background:rgba(0,242,255,0.22);flex-shrink:0; }
+    .slabel::after  { content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(0,242,255,0.08),transparent); }
+
+    /* Corner accent marks */
+    .ca { position:absolute;border-color:rgba(0,242,255,0.42);border-style:solid; }
+    .ca-tl { top:0;left:0;width:8px;height:8px;border-width:1px 0 0 1px; }
+    .ca-tr { top:0;right:0;width:8px;height:8px;border-width:1px 1px 0 0; }
+    .ca-bl { bottom:0;left:0;width:8px;height:8px;border-width:0 0 1px 1px; }
+    .ca-br { bottom:0;right:0;width:8px;height:8px;border-width:0 1px 1px 0; }
+
+    /* ═══════════════════════════════════════════════════
+       NAVIGATION
+    ═══════════════════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  padding: 1.1rem 3rem;
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; /* هذا يوزع العناصر الثلاثة (يمين، وسط، يسار) */
+  background: linear-gradient(180deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.65) 70%, transparent 100%);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.018);
+  direction: ltr; /* الحفاظ على ترتيب العناصر التقني من اليسار لليمين */
+}
+
+.nav-links {
+  /* جعل الروابط في منتصف المسافة بين الشعار والحالة */
+  position: absolute; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  display: flex; 
+  gap: 1.8rem; /* مسافة متوازنة لـ 6 روابط */
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.54rem; 
+  letter-spacing: 0.2em;
+  color: rgba(138,155,176,0.35); 
+  text-transform: uppercase;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: var(--c); /* اللون السماوي المضيء عند المرور بالماوس */
+}
+    .sdot { width:5px;height:5px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);display:inline-block;animation:dp 2.2s ease-in-out infinite; }
+    @keyframes dp { 0%,100%{opacity:1;box-shadow:0 0 8px var(--c)} 50%{opacity:.2;box-shadow:0 0 3px var(--c)} }
+
+    /* ═══════════════════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════════════════ */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 0 2rem;
+      position: relative; overflow: hidden;
+    }
+
+    .hcorner {
+      position: absolute;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.5rem; letter-spacing: 0.26em;
+      color: rgba(0,242,255,0.16); text-transform: uppercase;
+      line-height: 2; opacity: 0; direction: ltr;
+    }
+    .hc-tl { top:7.5rem;left:3rem;text-align:left; }
+    .hc-tr { top:7.5rem;right:3rem;text-align:right; }
+    .hc-bl { bottom:6rem;left:3rem;text-align:left; }
+    .hc-br { bottom:6rem;right:3rem;text-align:right; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.65rem;
+      border: 1px solid rgba(0,242,255,0.1);
+      padding: 0.3rem 1.4rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.52rem; letter-spacing: 0.46em;
+      color: rgba(0,242,255,0.45); text-transform: uppercase;
+      background: rgba(0,242,255,0.015);
+      margin-bottom: 2.8rem; opacity: 0;
+      direction: ltr;
+    }
+.hero-title-wrap { position:relative; display:inline-block; }
+
+#mrsad-shadow {
+      position: absolute; inset: 0;
+      font-family: 'Playfair Display', serif; font-weight: 900;
+      /* تم التصغير هنا */
+      font-size: clamp(4.5rem, 12vw, 10rem); 
+      line-height: 0.88;
+      color: var(--c); filter: blur(65px); opacity: 0.065;
+      pointer-events: none; user-select: none;
+    }
+    #mrsad-ghost {
+      position: absolute; top: 5px; left: 5px;
+      font-family: 'Playfair Display', serif; font-weight: 900;
+      /* تم التصغير هنا */
+      font-size: clamp(4.5rem, 12vw, 10rem); 
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+      -webkit-text-stroke: 1px rgba(0,242,255,0.05);
+      color: transparent; pointer-events: none; user-select: none;
+    }
+    #mrsad-title {
+      font-family: 'Playfair Display', serif; font-weight: 900;
+      /* تم التصغير هنا */
+      font-size: clamp(4.5rem, 12vw, 10rem); 
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+      background: linear-gradient(148deg, #fff 8%, #d4faff 32%, rgba(0,242,255,0.97) 56%, rgba(0,185,210,0.82) 80%, rgba(14,240,216,0.6) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      position: relative; z-index: 2;
+    } 
+
+/* الأقواس الجانبية وحالتها المبدئية المخفية */
+.tb { position:absolute; border-color:rgba(0,242,255,0.5); border-style:solid; opacity:0; }
+.tb-tl { top:-8px; left:-14px; width:24px; height:24px; border-width:2px 0 0 2px; }
+.tb-tr { top:-8px; right:-14px; width:24px; height:24px; border-width:2px 2px 0 0; }
+.tb-bl { bottom:-8px; left:-14px; width:24px; height:24px; border-width:0 0 2px 2px; }
+.tb-br { bottom:-8px; right:-14px; width:24px; height:24px; border-width:0 2px 2px 0; }
+
+/* الأقواس الجانبية وحالتها المبدئية المخفية */
+.tb { position:absolute; border-color:rgba(0,242,255,0.5); border-style:solid; opacity:0; }
+.tb-tl { top:-8px; left:-14px; width:24px; height:24px; border-width:2px 0 0 2px; }
+.tb-tr { top:-8px; right:-14px; width:24px; height:24px; border-width:2px 2px 0 0; }
+.tb-bl { bottom:-8px; left:-14px; width:24px; height:24px; border-width:0 0 2px 2px; }
+.tb-br { bottom:-8px; right:-14px; width:24px; height:24px; border-width:0 2px 2px 0; }
+    /* Arabic subtitle below MRSAD title */
+    .hero-ar-title {
+      font-family: 'Noto Kufi Arabic', sans-serif; font-weight: 700;
+      font-size: clamp(1.1rem, 2.5vw, 1.9rem);
+      color: rgba(0,242,255,0.55);
+      margin-top: 1.4rem; direction: rtl;
+      opacity: 0; letter-spacing: 0.02em;
+    }
+
+    .tb { position:absolute;border-color:rgba(0,242,255,0.5);border-style:solid;opacity:0; }
+    .tb-tl { top:-8px;left:-14px;width:24px;height:24px;border-width:2px 0 0 2px; }
+    .tb-tr { top:-8px;right:-14px;width:24px;height:24px;border-width:2px 2px 0 0; }
+    .tb-bl { bottom:-8px;left:-14px;width:24px;height:24px;border-width:0 0 2px 2px; }
+    .tb-br { bottom:-8px;right:-14px;width:24px;height:24px;border-width:0 2px 2px 0; }
+
+    .hero-rule { width:200px;height:1px;background:linear-gradient(90deg,transparent,rgba(0,242,255,0.3),transparent);margin:2.8rem auto 2rem; }
+
+    .hero-sub-en {
+      font-family: 'IBM Plex Mono', monospace; font-weight: 300;
+      font-size: clamp(0.6rem, 1.4vw, 0.82rem);
+      letter-spacing: 0.44em; color: rgba(138,155,176,0.5);
+      text-transform: uppercase; opacity: 0; direction: ltr;
+    }
+    .hero-sub-ar {
+      font-family: 'Noto Kufi Arabic', sans-serif; font-weight: 400;
+      font-size: clamp(0.9rem, 1.8vw, 1.22rem);
+      color: rgba(0,242,255,0.32); margin-top: 0.8rem;
+      opacity: 0; direction: rtl; max-width: 680px;
+      line-height: 1.85;
+    }
+
+    /* HERO PROGRESS BAR */
+    .hero-progress-wrap {
+      margin-top: 3.5rem; width: min(520px, 80vw);
+      opacity: 0;
+    }
+    .hpw-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.3em;
+      color: rgba(0,242,255,0.45); text-transform: uppercase;
+      margin-bottom: 0.7rem; text-align: left;
+      display: flex; align-items: center; justify-content: space-between;
+      direction: ltr;
+    }
+    .hpw-pct { color: var(--c); font-weight: 500; }
+    .hpw-bar-bg {
+      height: 1.5px; background: rgba(255,255,255,0.06);
+      overflow: hidden; position: relative;
+    }
+    .hpw-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, rgba(0,242,255,0.4), var(--c), rgba(14,240,216,0.8));
+      box-shadow: 0 0 12px var(--c), 0 0 24px rgba(0,242,255,0.3);
+      width: 0; transition: width 2.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .hpw-bar-glow {
+      position: absolute; top: -4px; height: 9px; width: 30px;
+      background: radial-gradient(ellipse at center, rgba(0,242,255,0.6), transparent);
+      filter: blur(3px);
+      transition: left 2.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .scroll-hint {
+      position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.48rem; letter-spacing: 0.36em;
+      color: rgba(138,155,176,0.22); text-transform: uppercase;
+    }
+    .scroll-line { width:1px;height:58px;background:linear-gradient(180deg,rgba(0,242,255,0.35),transparent);animation:sln 2.7s ease-in-out infinite; }
+    @keyframes sln {
+      0%{transform:scaleY(0);transform-origin:top;opacity:1}
+      50%{transform:scaleY(1);transform-origin:top;opacity:1}
+      51%{transform-origin:bottom}
+      100%{transform:scaleY(0);transform-origin:bottom;opacity:0}
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MANIFESTO
+    ═══════════════════════════════════════════════════ */
+    #manifesto {
+      padding: 8rem 8vw 6rem;
+      max-width: 1440px; margin: 0 auto; position: relative;
+    }
+
+    .mani-quote-block {
+      border-left: 2px solid rgba(0,242,255,0.2);
+      padding-left: 2.2rem; margin-bottom: 5rem; max-width: 860px;
+    }
+    .mani-quote-en {
+      font-family: 'Playfair Display', serif; font-style: italic;
+      font-size: clamp(1.3rem, 2.8vw, 2.2rem); font-weight: 400;
+      color: rgba(0,242,255,0.72); line-height: 1.5;
+      margin-bottom: 0.6rem;
+    }
+    .mani-quote-accent {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.56rem; letter-spacing: 0.32em;
+      color: rgba(0,242,255,0.25); text-transform: uppercase;
+      direction: ltr;
+    }
+
+    .mani-body {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4.2vw, 4rem);
+      line-height: 1.22; font-weight: 400;
+      color: #e0e8f0; max-width: 1050px;
+    }
+    .mani-body em { font-style: italic; color: var(--c); }
+    .mw { display:inline-block;opacity:0;transform:translateY(18px);transition:opacity 0.5s ease,transform 0.5s ease; }
+    .mw.vis { opacity:1;transform:none; }
+
+    .mani-ar {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-size: clamp(0.88rem, 1.6vw, 1.22rem);
+      line-height: 2.3; font-weight: 400;
+      color: rgba(138,155,176,0.58);
+      margin-top: 4.5rem; max-width: 750px;
+      margin-right: auto; text-align: right; direction: rtl;
+    }
+    .mani-ar strong { color: rgba(0,242,255,0.68); font-weight: 600; }
+
+    .mani-deco {
+      font-family: 'Playfair Display', serif; font-weight: 900;
+      font-size: clamp(11rem, 19vw, 22rem);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(0,242,255,0.018);
+      position: absolute; right: -2rem; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none; user-select: none; line-height: 1;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       ARCHITECTURE
+    ═══════════════════════════════════════════════════ */
+    #architecture {
+      padding: 5rem 6vw 5rem;
+      max-width: 1440px; margin: 0 auto; position: relative;
+    }
+    .arch-layout {
+      display: grid; grid-template-columns: 1fr 1.15fr;
+      gap: 6rem; align-items: center; margin-top: 3.5rem;
+    }
+    .arch-diagram { position: relative; }
+    .arch-layer {
+      border: 1px solid rgba(0,242,255,0.08);
+      background: rgba(255,255,255,0.012);
+      padding: 1.4rem 1.8rem;
+      position: relative; overflow: hidden;
+      cursor: default; margin-bottom: 0;
+      transition: border-color 0.4s ease, background 0.4s ease;
+    }
+    .arch-layer::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,242,255,0.15), transparent);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .arch-layer:hover { border-color: rgba(0,242,255,0.22); background: rgba(0,242,255,0.02); }
+    .arch-layer:hover::before { opacity: 1; }
+    .arch-layer.arch-active { border-color: rgba(0,242,255,0.38); background: rgba(0,242,255,0.03); }
+    .arch-layer.arch-active::before { opacity: 1; }
+
+    .al-num { font-family:'IBM Plex Mono',monospace;font-size:0.48rem;letter-spacing:0.3em;color:rgba(0,242,255,0.22);text-transform:uppercase;margin-bottom:0.4rem;direction:ltr; }
+    .al-title { font-family:'Syne',sans-serif;font-weight:700;font-size:0.86rem;letter-spacing:0.1em;color:rgba(0,242,255,0.78);text-transform:uppercase; }
+    .al-desc { font-size:0.72rem;color:rgba(138,155,176,0.55);margin-top:0.3rem;line-height:1.72; }
+    .al-tags { display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.8rem; }
+    .al-tag { font-family:'IBM Plex Mono',monospace;font-size:0.44rem;letter-spacing:0.18em;color:rgba(0,242,255,0.28);text-transform:uppercase;border:1px solid rgba(0,242,255,0.07);padding:0.12rem 0.5rem;background:rgba(0,242,255,0.015); }
+
+    .al-threat-ind {
+      position:absolute;top:50%;right:1.2rem;transform:translateY(-50%);
+      display:flex;align-items:center;gap:0.4rem;
+      font-family:'IBM Plex Mono',monospace;font-size:0.44rem;letter-spacing:0.2em;
+      color:rgba(0,220,120,0.65);text-transform:uppercase;
+      opacity:0;transition:opacity 0.4s;
+    }
+    .al-threat-ind.show { opacity:1; }
+    .al-tid { width:4px;height:4px;border-radius:50%;background:rgba(0,220,120,0.8);box-shadow:0 0 6px rgba(0,220,120,0.6); }
+
+    .arch-connector {
+      display:flex;flex-direction:column;align-items:center;
+      height:36px;position:relative;margin:0;
+      background:rgba(255,255,255,0.008);
+      border-left:1px solid rgba(0,242,255,0.04);
+      border-right:1px solid rgba(0,242,255,0.04);
+    }
+    .arch-connector-line {
+      position:absolute;left:50%;top:0;bottom:0;
+      width:1px;background:linear-gradient(180deg,rgba(0,242,255,0.08),rgba(0,242,255,0.25),rgba(0,242,255,0.08));
+    }
+    .acd { position:absolute;left:50%;margin-left:-2.5px;width:5px;height:5px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);animation:acd-dn 3s ease-in-out infinite; }
+    @keyframes acd-dn { 0%{top:0;opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{top:100%;opacity:0} }
+    .act { position:absolute;left:50%;margin-left:-2.5px;width:5px;height:5px;border-radius:50%;background:var(--thr);box-shadow:0 0 8px var(--thr);animation:act-up 5.5s ease-in-out infinite 2.2s;opacity:0; }
+    @keyframes act-up {
+      0%{bottom:0;opacity:0} 12%{opacity:1} 55%{bottom:82%;opacity:1} 65%{bottom:82%;opacity:1;box-shadow:0 0 20px var(--thr)} 75%{bottom:82%;opacity:0} 100%{bottom:0;opacity:0}
+    }
+    .arch-neutralize { position:absolute;inset:0;background:rgba(0,220,120,0.04);opacity:0;pointer-events:none;animation:neu-flash 5.5s ease-in-out infinite 2.85s; }
+    @keyframes neu-flash { 0%,49%,100%{opacity:0} 50%,58%{opacity:1} 65%{opacity:0} }
+
+    .arch-headline { font-family:'Playfair Display',serif;font-size:clamp(1.9rem,3.4vw,3.2rem);font-weight:400;line-height:1.2;color:#e0e8f0;margin-bottom:1.8rem; }
+    .arch-headline em { font-style:italic;color:var(--c); }
+    .arch-body { font-size:0.88rem;line-height:1.95;color:rgba(138,155,176,0.68);margin-bottom:2.5rem; }
+    .arch-features { display:flex;flex-direction:column;gap:1rem; }
+    .arch-feat { display:flex;gap:1.1rem;align-items:flex-start;padding:1.1rem 1.3rem;border:1px solid rgba(255,255,255,0.032);background:rgba(255,255,255,0.01);transition:border-color 0.3s,background 0.3s; }
+    .arch-feat:hover { border-color:rgba(0,242,255,0.14);background:rgba(0,242,255,0.018); }
+    .af-icon { width:38px;height:38px;flex-shrink:0;border:1px solid rgba(0,242,255,0.18);display:flex;align-items:center;justify-content:center; }
+    .af-icon svg { width:18px;height:18px; }
+    .af-title { font-size:0.8rem;font-weight:700;color:rgba(0,242,255,0.78);letter-spacing:0.06em; }
+    .af-desc { font-size:0.72rem;color:rgba(138,155,176,0.55);margin-top:0.22rem;line-height:1.65; }
+
+    /* ═══════════════════════════════════════════════════
+       LIVE CALIBRATION TERMINAL  (NEW WOW FACTOR)
+    ═══════════════════════════════════════════════════ */
+    #calibration {
+      padding: 5rem 6vw 5rem;
+      max-width: 1440px; margin: 0 auto; position: relative;
+    }
+
+    .cal-layout {
+      display: grid; grid-template-columns: 1.1fr 0.9fr;
+      gap: 5rem; align-items: center; margin-top: 3.5rem;
+    }
+
+    /* The glass terminal window */
+    .cal-terminal {
+      background: rgba(0,8,18,0.82);
+      border: 1px solid rgba(0,242,255,0.12);
+      backdrop-filter: var(--glass-blur);
+      position: relative; overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(0,242,255,0.04) inset,
+        0 24px 80px rgba(0,0,0,0.5),
+        0 0 60px rgba(0,242,255,0.04);
+    }
+    .cal-terminal::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,242,255,0.02) 0%, transparent 50%, rgba(0,242,255,0.01) 100%);
+      pointer-events: none;
+    }
+
+    /* Terminal top bar */
+    .cal-bar {
+      display: flex; align-items: center; gap: 0.55rem;
+      padding: 0.75rem 1.2rem;
+      background: rgba(0,242,255,0.028);
+      border-bottom: 1px solid rgba(0,242,255,0.07);
+    }
+    .cal-dot { width:10px;height:10px;border-radius:50%; }
+    .cal-dot-r { background:#ff5f56; }
+    .cal-dot-y { background:#ffbd2e; }
+    .cal-dot-g { background:#27c93f; }
+    .cal-title-bar {
+      flex: 1; text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.52rem; letter-spacing: 0.24em;
+      color: rgba(0,242,255,0.3); text-transform: uppercase;
+    }
+    .cal-ver { font-family:'IBM Plex Mono',monospace;font-size:0.46rem;letter-spacing:0.18em;color:rgba(138,155,176,0.22);text-transform:uppercase; }
+
+    /* Terminal body */
+    .cal-body {
+      padding: 1.5rem 1.6rem 1.8rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(0.6rem, 1.1vw, 0.74rem);
+      line-height: 2; min-height: 320px;
+    }
+    .cal-line {
+      display: flex; align-items: flex-start; gap: 0.7rem;
+      opacity: 0; transform: translateY(4px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .cal-line.visible { opacity: 1; transform: none; }
+
+    .cl-prompt { color: rgba(0,242,255,0.5); flex-shrink: 0; }
+    .cl-text { color: rgba(200,220,235,0.75); flex: 1; }
+    .cl-status-ok  { color: rgba(0,220,120,0.85); font-weight: 500; flex-shrink: 0; }
+    .cl-status-sb  { color: rgba(255,185,50,0.8);  font-weight: 500; flex-shrink: 0; }
+    .cl-status-aw  { color: rgba(255,68,68,0.8);   font-weight: 500; flex-shrink: 0; }
+
+    .cal-cursor {
+      display: inline-block; width: 7px; height: 1em;
+      background: var(--c); opacity: 1; margin-left: 3px;
+      animation: blink 1.1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* State indicator line */
+    .cal-state-line {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(0,242,255,0.06);
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .cal-state-dot { width:5px;height:5px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);animation:dp 2.2s ease-in-out infinite;flex-shrink:0; }
+    .cal-state-txt { font-family:'IBM Plex Mono',monospace;font-size:0.52rem;letter-spacing:0.3em;color:rgba(0,242,255,0.45);text-transform:uppercase; }
+
+    /* Right panel */
+    .cal-panel {
+      display: flex; flex-direction: column; gap: 2.5rem;
+    }
+    .cal-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3.2vw, 3rem);
+      font-weight: 400; line-height: 1.2; color: #e0e8f0;
+    }
+    .cal-headline em { font-style: italic; color: var(--c); }
+    .cal-desc {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      font-size: clamp(0.88rem, 1.5vw, 1.12rem);
+      line-height: 2.1; color: rgba(138,155,176,0.58);
+      direction: rtl; text-align: right;
+    }
+    .cal-desc strong { color: rgba(0,242,255,0.62); }
+
+    /* Stack / tech chips */
+    .cal-stack {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; direction: ltr;
+    }
+    .cal-chip {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.52rem; letter-spacing: 0.2em;
+      color: rgba(0,242,255,0.38); text-transform: uppercase;
+      border: 1px solid rgba(0,242,255,0.1);
+      padding: 0.25rem 0.7rem; background: rgba(0,242,255,0.02);
+      transition: border-color 0.3s, color 0.3s;
+    }
+    .cal-chip:hover { border-color: rgba(0,242,255,0.35); color: rgba(0,242,255,0.65); }
+
+    /* ═══════════════════════════════════════════════════
+       MODULE CARDS (CALIBRATION MODULES)
+    ═══════════════════════════════════════════════════ */
+    #modules {
+      padding: 5rem 6vw 5rem;
+      max-width: 1440px; margin: 0 auto; position: relative;
+    }
+
+    .mod-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem; margin-top: 3.5rem;
+    }
+
+    .mod-card {
+      position: relative; overflow: hidden;
+      background: rgba(0,6,15,0.8);
+      border: 1px solid rgba(0,242,255,0.08);
+      backdrop-filter: var(--glass-blur);
+      padding: 2.2rem 2rem;
+      transition: border-color 0.4s, background 0.4s, transform 0.3s;
+      opacity: 0; transform: translateY(28px);
+      will-change: transform;
+    }
+    .mod-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,242,255,0.25), transparent);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .mod-card::after {
+      content: ''; position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, rgba(0,242,255,0.03) 0%, transparent 60%);
+      pointer-events: none; opacity: 0; transition: opacity 0.4s;
+    }
+    .mod-card:hover {
+      border-color: rgba(0,242,255,0.2);
+      background: rgba(0,10,22,0.9);
+      transform: translateY(-4px);
+    }
+    .mod-card:hover::before { opacity: 1; }
+    .mod-card:hover::after  { opacity: 1; }
+
+    .mod-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.48rem; letter-spacing: 0.32em;
+      color: rgba(0,242,255,0.22); text-transform: uppercase;
+      margin-bottom: 1.4rem; direction: ltr;
+    }
+
+    .mod-icon-wrap {
+      width: 46px; height: 46px;
+      border: 1px solid rgba(0,242,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.4rem; position: relative;
+      background: rgba(0,242,255,0.02);
+    }
+    .mod-icon-wrap::before {
+      content: ''; position: absolute;
+      inset: -4px; border: 1px solid rgba(0,242,255,0.06);
+    }
+    .mod-icon-wrap svg { width: 22px; height: 22px; }
+
+    .mod-title-en {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.92rem; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.9); text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .mod-title-ar {
+      font-family: 'Noto Kufi Arabic', sans-serif; font-weight: 600;
+      font-size: 1.05rem; color: rgba(0,242,255,0.55);
+      direction: rtl; text-align: right;
+      margin-bottom: 1.2rem;
+    }
+    .mod-desc {
+      font-family: 'Noto Kufi Arabic', sans-serif; font-weight: 400;
+      font-size: 0.82rem; line-height: 2;
+      color: rgba(138,155,176,0.55);
+      direction: rtl; text-align: right;
+      margin-bottom: 1.6rem;
+    }
+
+    .mod-status-bar {
+      border-top: 1px solid rgba(0,242,255,0.05);
+      padding-top: 1.2rem;
+      direction: ltr;
+    }
+    .mod-status-line {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.52rem; letter-spacing: 0.18em;
+      color: rgba(0,242,255,0.38); text-transform: uppercase;
+    }
+    .mod-status-dot {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--warn); box-shadow: 0 0 6px var(--warn);
+      animation: dp 1.8s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .mod-progress {
+      margin-top: 0.9rem;
+      height: 1px; background: rgba(255,255,255,0.04);
+      position: relative; overflow: hidden;
+    }
+    .mod-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,242,255,0.5));
+      box-shadow: 0 0 8px rgba(0,242,255,0.3);
+      animation: mpfill 4s ease-in-out infinite alternate;
+    }
+    @keyframes mpfill { 0%{width:30%} 100%{width:85%} }
+
+    /* ═══════════════════════════════════════════════════
+       CAPABILITIES / BENTO GRID
+    ═══════════════════════════════════════════════════ */
+    #capabilities { padding: 5rem 6vw 5rem }
+    .bento-inner { max-width: 1440px; margin: 0 auto; }
+    .bento-grid {
+      margin-top: 3rem;
+      display: grid; grid-template-columns: repeat(12, 1fr);
+      gap: 2px; background: rgba(255,255,255,0.022);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    .bc {
+      background: rgba(1,2,4,0.9);
+      border: 1px solid transparent;
+      padding: 2.2rem 2rem;
+      position: relative; overflow: hidden;
+      transition: border-color 0.4s, background 0.4s, transform 0.25s ease;
+      opacity: 0; transform: translateY(20px); will-change: transform;
+    }
+    .bc:hover { background:rgba(3,6,10,0.94);border-color:rgba(0,242,255,0.11); }
+    .bc-a { grid-column:span 7;grid-row:span 2; }
+    .bc-b { grid-column:span 5; }
+    .bc-c { grid-column:span 5; }
+    .bc-d { grid-column:span 4; }
+    .bc-e { grid-column:span 4; }
+    .bc-f { grid-column:span 4; }
+
+    .bc-tag { font-family:'IBM Plex Mono',monospace;font-size:0.46rem;letter-spacing:0.22em;color:rgba(0,242,255,0.25);text-transform:uppercase;margin-bottom:1.4rem;direction:ltr; }
+    .bc-icon { width:38px;height:38px;border:1px solid rgba(0,242,255,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:1rem; }
+    .bc-icon svg { width:18px;height:18px; }
+    .bc-en { font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;letter-spacing:0.08em;color:rgba(255,255,255,0.88);text-transform:uppercase; }
+    .bc-ar { font-family:'Noto Kufi Arabic',sans-serif;font-weight:600;font-size:0.95rem;color:rgba(0,242,255,0.5);direction:rtl;text-align:right;margin-bottom:0.9rem; }
+    .bc-body { font-size:0.78rem;line-height:1.88;color:rgba(138,155,176,0.55); }
+    .bc-chip { display:inline-block;margin-top:1.2rem;font-family:'IBM Plex Mono',monospace;font-size:0.44rem;letter-spacing:0.22em;color:rgba(0,242,255,0.32);text-transform:uppercase;border:1px solid rgba(0,242,255,0.07);padding:0.18rem 0.55rem; }
+
+    .bc-threat-badge { display:inline-flex;align-items:center;gap:0.4rem;font-family:'IBM Plex Mono',monospace;font-size:0.44rem;letter-spacing:0.2em;color:rgba(255,68,68,0.6);text-transform:uppercase;margin-bottom:1.2rem;direction:ltr; }
+    .bc-thr-dot { width:4px;height:4px;border-radius:50%;background:rgba(255,68,68,0.8);box-shadow:0 0 6px rgba(255,68,68,0.6);animation:dp 1.4s ease-in-out infinite; }
+
+    /* Process tree */
+    .proc-tree { margin-top:1.2rem;font-family:'IBM Plex Mono',monospace;font-size:0.54rem;line-height:2; }
+    .pn { display:flex;align-items:center;gap:0.4rem;color:rgba(138,155,176,0.42); }
+    .pn-d { width:6px;height:6px;border-radius:50%;background:rgba(0,242,255,0.22);box-shadow:0 0 4px rgba(0,242,255,0.15);flex-shrink:0; }
+    .pn-line { width:14px;height:1px;background:rgba(0,242,255,0.1);flex-shrink:0; }
+    .pn.threat .pn-d { background:rgba(255,68,68,0.7);box-shadow:0 0 6px rgba(255,68,68,0.4); }
+    .pn.threat { color:rgba(255,68,68,0.6); }
+    .pn.blocked .pn-d { background:rgba(0,220,120,0.7);box-shadow:0 0 6px rgba(0,220,120,0.4); }
+    .pn.blocked { color:rgba(0,220,120,0.6); }
+
+    #radar-canvas { position:absolute;bottom:1.5rem;right:1.5rem;opacity:0.5; }
+
+    #neural-canvas { display:block;margin-top:1rem;width:100%;height:75px;opacity:0.85; }
+
+    /* ═══════════════════════════════════════════════════
+       TERMINAL + STATUS
+    ═══════════════════════════════════════════════════ */
+    #terminal-sec {
+      padding: 9rem 6vw 9rem;
+      max-width: 1440px; margin: 0 auto; position: relative;
+    }
+    .term-layout { display:grid;grid-template-columns:1.1fr 0.9fr;gap:3.5rem;align-items:start;margin-top:3rem; }
+
+    .terminal {
+      background:rgba(0,6,14,0.92);
+      border:1px solid rgba(0,242,255,0.1);
+      backdrop-filter:var(--glass-blur);
+      overflow:hidden;
+      box-shadow:0 0 80px rgba(0,0,0,0.4),0 0 40px rgba(0,242,255,0.03);
+    }
+    .term-bar {
+      display:flex;align-items:center;gap:0.5rem;
+      padding:0.65rem 1rem;
+      background:rgba(0,242,255,0.025);
+      border-bottom:1px solid rgba(0,242,255,0.06);
+    }
+    .td { width:10px;height:10px;border-radius:50%; }
+    .td-r{background:#ff5f56}.td-y{background:#ffbd2e}.td-g{background:#27c93f}
+    .t-ttl { flex:1;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.5rem;letter-spacing:0.22em;color:rgba(0,242,255,0.28);text-transform:uppercase; }
+    .t-ver  { font-family:'IBM Plex Mono',monospace;font-size:0.45rem;letter-spacing:0.18em;color:rgba(138,155,176,0.2);text-transform:uppercase; }
+
+    .term-body { padding:1.2rem 1.4rem 1.5rem;font-family:'IBM Plex Mono',monospace;font-size:clamp(0.56rem,1vw,0.68rem);line-height:1.9;max-height:320px;overflow:hidden; }
+
+    .log-ln { display:flex;gap:0.6rem;opacity:0;transition:opacity 0.3s; }
+    .log-ln.on { opacity:1; }
+    .l-ts { color:rgba(0,242,255,0.2);flex-shrink:0; }
+    .l-body { color:rgba(138,155,176,0.55); }
+    .l-ok   { color:rgba(0,220,120,0.8); }
+    .l-warn { color:rgba(255,185,50,0.8); }
+    .l-inf  { color:rgba(0,242,255,0.55); }
+    .blink { display:inline-block;width:6px;height:0.8em;background:var(--c);animation:blink 1s step-end infinite;vertical-align:text-bottom; }
+
+    /* Status panel */
+    .status-panel { display:flex;flex-direction:column;gap:1.8rem; }
+    .sp-blk { border:1px solid rgba(255,255,255,0.03);padding:1.4rem 1.6rem;background:rgba(255,255,255,0.008); }
+    .sp-blk-num { font-family:'IBM Plex Mono',monospace;font-size:0.44rem;letter-spacing:0.3em;color:rgba(0,242,255,0.18);text-transform:uppercase;margin-bottom:0.4rem;direction:ltr; }
+    .sp-lbl { font-size:0.72rem;color:rgba(138,155,176,0.4);letter-spacing:0.06em;text-transform:uppercase;font-weight:600; }
+    .sp-val { font-family:'IBM Plex Mono',monospace;font-size:0.88rem;letter-spacing:0.22em;color:rgba(255,255,255,0.65);text-transform:uppercase;margin-top:0.2rem; }
+    .sp-val.c { color:var(--c); }
+    .sp-sub { font-size:0.68rem;color:rgba(138,155,176,0.32);margin-top:0.2rem; }
+    .sp-bar-bg { margin-top:0.9rem;height:1px;background:rgba(255,255,255,0.04);overflow:hidden; }
+    .sp-bar-fill { height:100%;background:linear-gradient(90deg,rgba(0,242,255,0.1),var(--c));box-shadow:0 0 8px rgba(0,242,255,0.2);width:0;transition:width 1.8s cubic-bezier(0.25,0.46,0.45,0.94); }
+
+    .sentinel-init { margin-top:0.5rem;display:flex;align-items:center;justify-content:space-between;padding:1.4rem 1.6rem;border:1px solid rgba(0,242,255,0.06);background:rgba(0,242,255,0.012); }
+    .si-ar { font-family:'Noto Kufi Arabic',sans-serif;font-size:0.92rem;color:rgba(0,242,255,0.6);direction:rtl; }
+    .si-sub { font-family:'IBM Plex Mono',monospace;font-size:0.48rem;letter-spacing:0.2em;color:rgba(138,155,176,0.25);text-transform:uppercase;margin-top:0.2rem;direction:ltr; }
+    .si-ring { position:relative;width:44px;height:44px;flex-shrink:0; }
+    .si-ring::before { content:'';position:absolute;inset:0;border:1px solid rgba(0,242,255,0.32);border-radius:50%; }
+    .si-ring::after  { content:'';position:absolute;inset:0;border:1px solid rgba(0,242,255,0.22);border-radius:50%;animation:rx 2.4s ease-out infinite; }
+    @keyframes rx { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(2.2);opacity:0} }
+    .si-dot { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 18px var(--c); }
+    .init-track { margin-top:1.2rem;height:1px;background:rgba(255,255,255,0.04);position:relative;overflow:hidden; }
+    .init-fill { height:100%;background:linear-gradient(90deg,rgba(0,242,255,0.12),var(--c));box-shadow:0 0 10px rgba(0,242,255,0.22);width:0;animation:ifill 10s ease forwards 0.8s; }
+    @keyframes ifill { to{width:72%} }
+    .init-lbl { position:absolute;right:0;top:-1.15rem;font-family:'IBM Plex Mono',monospace;font-size:0.48rem;letter-spacing:0.2em;color:rgba(0,242,255,0.28); }
+
+    /* ═══════════════════════════════════════════════════
+       FINAL CTA
+    ═══════════════════════════════════════════════════ */
+    #cta {
+      padding: 13rem 6vw 11rem;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    #cta::before { content:'';position:absolute;top:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,242,255,0.22),transparent); }
+    #cta::after  { content:'';position:absolute;bottom:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,242,255,0.1),transparent); }
+
+    .cta-spot {
+      position:absolute;width:900px;height:900px;
+      top:50%;left:50%;transform:translate(-50%,-62%);
+      background:radial-gradient(circle,rgba(0,242,255,0.032) 0%,transparent 62%);
+      filter:blur(50px);pointer-events:none;border-radius:50%;
+      animation:cspot 9s ease-in-out infinite;
+    }
+    @keyframes cspot { 0%,100%{opacity:.55;transform:translate(-50%,-62%) scale(1)} 50%{opacity:1;transform:translate(-50%,-60%) scale(1.1)} }
+
+    .cta-cross-h { position:absolute;top:50%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,rgba(0,242,255,0.04) 20%,rgba(0,242,255,0.04) 80%,transparent 95%);pointer-events:none; }
+    .cta-cross-v { position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent 5%,rgba(0,242,255,0.04) 20%,rgba(0,242,255,0.04) 80%,transparent 95%);pointer-events:none; }
+
+    .cta-eyebrow {
+      font-family:'IBM Plex Mono',monospace;font-size:0.54rem;letter-spacing:0.48em;
+      color:rgba(0,242,255,0.3);text-transform:uppercase;margin-bottom:2.5rem;
+      position:relative;z-index:2;
+      display:flex;align-items:center;justify-content:center;gap:1.2rem;
+    }
+    .cta-eyebrow::before,.cta-eyebrow::after { content:'';width:38px;height:1px;background:rgba(0,242,255,0.18); }
+
+    .cta-headline {
+      font-family:'Playfair Display',serif;font-weight:900;
+      font-size:clamp(3rem,7.5vw,8rem);
+      line-height:0.96;letter-spacing:-0.025em;
+      color:#e0e8f0;max-width:1100px;margin:0 auto 1.5rem;
+      position:relative;z-index:2;
+    }
+    .cta-headline em { color:var(--c);font-style:italic; }
+
+    .cta-sub {
+      font-family:'Noto Kufi Arabic',sans-serif;font-weight:400;
+      font-size:clamp(0.88rem,1.7vw,1.25rem);
+      color:rgba(138,155,176,0.38);max-width:580px;margin:0 auto 5.5rem;
+      line-height:2.1;position:relative;z-index:2;direction:rtl;
+    }
+
+    .cta-btns { display:flex;gap:1.1rem;justify-content:center;flex-wrap:wrap;margin-bottom:5rem;position:relative;z-index:2; }
+
+    .mag-wrap { display:inline-block; }
+    .btn {
+      font-family:'IBM Plex Mono',monospace;font-size:0.64rem;letter-spacing:0.3em;text-transform:uppercase;
+      font-weight:500;padding:1rem 2.5rem;cursor:pointer;transition:all 0.35s ease;
+      text-decoration:none;display:inline-block;position:relative;overflow:hidden;will-change:transform;
+      border:none;
+    }
+    .btn-primary { background:var(--c);color:#000; }
+    .btn-primary::before { content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.28),transparent);opacity:0;transition:opacity 0.3s; }
+    .btn-primary:hover::before { opacity:1; }
+    .btn-primary:hover { box-shadow:0 0 55px rgba(0,242,255,0.42),0 0 110px rgba(0,242,255,0.14); }
+    .btn-ghost { background:transparent;color:rgba(0,242,255,0.62);border:1px solid rgba(0,242,255,0.18); }
+    .btn-ghost:hover { background:rgba(0,242,255,0.04);border-color:rgba(0,242,255,0.42);color:var(--c); }
+    .btn-dim { background:transparent;color:rgba(138,155,176,0.42);border:1px solid rgba(255,255,255,0.055); }
+    .btn-dim:hover { color:rgba(138,155,176,0.78);border-color:rgba(255,255,255,0.11); }
+
+    .cta-sig { font-family:'IBM Plex Mono',monospace;font-size:0.54rem;letter-spacing:0.28em;color:rgba(138,155,176,0.2);text-transform:uppercase;position:relative;z-index:2; }
+
+    /* ═══════════════════════════════════════════════════
+       RESTRICTED ACCESS MODAL
+    ═══════════════════════════════════════════════════ */
+    #modal-overlay {
+      position: fixed; inset: 0; z-index: 8000;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(16px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #modal-overlay.open {
+      opacity: 1; pointer-events: all;
+    }
+
+    .modal-box {
+      position: relative; width: min(560px, 90vw);
+      background: rgba(0,6,16,0.96);
+      border: 1px solid rgba(0,242,255,0.14);
+      padding: 3.5rem 3rem;
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow:
+        0 0 0 1px rgba(0,242,255,0.04) inset,
+        0 32px 100px rgba(0,0,0,0.7),
+        0 0 80px rgba(0,242,255,0.06);
+    }
+    #modal-overlay.open .modal-box {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-corner { position:absolute;border-color:rgba(0,242,255,0.4);border-style:solid; }
+    .mc-tl { top:0;left:0;width:12px;height:12px;border-width:1.5px 0 0 1.5px; }
+    .mc-tr { top:0;right:0;width:12px;height:12px;border-width:1.5px 1.5px 0 0; }
+    .mc-bl { bottom:0;left:0;width:12px;height:12px;border-width:0 0 1.5px 1.5px; }
+    .mc-br { bottom:0;right:0;width:12px;height:12px;border-width:0 1.5px 1.5px 0; }
+
+    .modal-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.5rem; letter-spacing: 0.4em;
+      color: rgba(255,68,68,0.55); text-transform: uppercase;
+      margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.7rem;
+      direction: ltr;
+    }
+    .modal-eyebrow-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(255,68,68,0.8);
+      box-shadow: 0 0 8px rgba(255,68,68,0.5);
+      animation: dp 1.4s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .modal-title-en {
+      font-family: 'Playfair Display', serif; font-weight: 900;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      color: #fff; margin-bottom: 0.5rem; letter-spacing: -0.01em;
+      direction: ltr;
+    }
+    .modal-title-ar {
+      font-family: 'Noto Kufi Arabic', sans-serif; font-weight: 700;
+      font-size: 1.1rem; color: rgba(0,242,255,0.55);
+      direction: rtl; text-align: right; margin-bottom: 2rem;
+    }
+
+    .modal-divider { width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,242,255,0.15),transparent);margin-bottom:2rem; }
+
+    .modal-body-ar {
+      font-family: 'Noto Kufi Arabic', sans-serif; font-weight: 400;
+      font-size: 1rem; line-height: 2.1;
+      color: rgba(200,220,235,0.72);
+      direction: rtl; text-align: right; margin-bottom: 2rem;
+    }
+    .modal-body-en {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.2em;
+      color: rgba(138,155,176,0.38); line-height: 1.9;
+      text-transform: uppercase; direction: ltr;
+      margin-bottom: 2.5rem;
+    }
+
+    .modal-status {
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.9rem 1.2rem;
+      background: rgba(0,242,255,0.02);
+      border: 1px solid rgba(0,242,255,0.06);
+      margin-bottom: 2rem;
+    }
+    .modal-status-dot { width:5px;height:5px;border-radius:50%;background:var(--warn);box-shadow:0 0 8px var(--warn);animation:dp 1.8s ease-in-out infinite;flex-shrink:0; }
+    .modal-status-txt { font-family:'IBM Plex Mono',monospace;font-size:0.54rem;letter-spacing:0.22em;color:rgba(0,242,255,0.38);text-transform:uppercase;direction:ltr; }
+
+    .modal-close {
+      width: 100%; padding: 0.9rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase;
+      background: transparent; border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(138,155,176,0.45); cursor: pointer;
+      transition: all 0.3s;
+    }
+    .modal-close:hover { border-color: rgba(0,242,255,0.2); color: rgba(0,242,255,0.6); }
+
+    /* ═══════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════ */
+    footer {
+      position: relative; z-index: 10;
+      border-top: 1px solid rgba(255,255,255,0.028);
+      padding: 3rem 5vw 5.5rem;
+    }
+    .foot-main { display:flex;justify-content:space-between;flex-wrap:wrap;gap:2.5rem;padding-bottom:2rem;border-bottom:1px solid rgba(255,255,255,0.022); }
+    .foot-logo { font-family:'Playfair Display',serif;font-weight:900;font-size:2.4rem;letter-spacing:0.08em;background:linear-gradient(100deg,#fff 25%,rgba(0,242,255,0.6) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .foot-tagline { font-family:'IBM Plex Mono',monospace;font-size:0.5rem;letter-spacing:0.26em;color:rgba(138,155,176,0.22);text-transform:uppercase;margin-top:0.4rem;direction:ltr; }
+    .foot-chips { display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.9rem; }
+    .foot-chip { font-family:'IBM Plex Mono',monospace;font-size:0.46rem;letter-spacing:0.18em;color:rgba(0,242,255,0.22);text-transform:uppercase;border:1px solid rgba(0,242,255,0.055);padding:0.14rem 0.5rem; }
+    .foot-ar { font-family:'Noto Kufi Arabic',sans-serif;font-size:0.7rem;color:rgba(138,155,176,0.25);direction:rtl;line-height:1.95; }
+    .foot-bottom { padding-top:1.4rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem; }
+    .foot-copy { font-family:'IBM Plex Mono',monospace;font-size:0.5rem;letter-spacing:0.16em;color:rgba(138,155,176,0.18);text-transform:uppercase;direction:ltr; }
+    .foot-build { font-family:'IBM Plex Mono',monospace;font-size:0.46rem;letter-spacing:0.2em;color:rgba(0,242,255,0.2);text-transform:uppercase;direction:ltr; }
+
+    /* ═══════════════════════════════════════════════════
+       TELEMETRY STRIP
+    ═══════════════════════════════════════════════════ */
+    #tele-strip {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(0,0,0,0.97);
+      border-top: 1px solid rgba(0,242,255,0.055);
+      backdrop-filter: blur(12px);
+      padding: 0.28rem 0; overflow: hidden;
+    }
+    .strip-track { display:flex;gap:3rem;animation:stroll 42s linear infinite;white-space:nowrap; }
+    @keyframes stroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    .tsi { display:flex;align-items:center;gap:0.5rem;font-family:'IBM Plex Mono',monospace;font-size:0.48rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,242,255,0.2);flex-shrink:0; }
+    .tss { width:2px;height:2px;border-radius:50%;background:rgba(0,242,255,0.28); }
+    .tsv { color:rgba(0,242,255,0.45); }
+
+    /* ═══════════════════════════════════════════════════
+       GSAP INITIAL STATES
+    ═══════════════════════════════════════════════════ */
+    .rup   { opacity:0;transform:translateY(42px); }
+    .rleft { opacity:0;transform:translateX(-26px); }
+
+    /* ═══════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════ */
+    @media (max-width: 1100px) {
+      .arch-layout { grid-template-columns:1fr;gap:3rem; }
+      .cal-layout  { grid-template-columns:1fr;gap:3rem; }
+      .term-layout { grid-template-columns:1fr;gap:3rem; }
+      .mod-grid    { grid-template-columns:1fr; }
+      .bc-a { grid-column:span 12; }
+      .bc-b,.bc-c { grid-column:span 6; }
+      .bc-d,.bc-e,.bc-f { grid-column:span 4; }
+    }
+    @media (max-width: 900px) {
+      nav { padding:1rem 1.5rem; }
+      .nav-links { display:none; }
+      .hcorner { display:none; }
+      .mani-deco { display:none; }
+      .bento-grid { grid-template-columns:1fr;background:none;gap:1rem; }
+      .bc-a,.bc-b,.bc-c,.bc-d,.bc-e,.bc-f { grid-column:span 1;grid-row:span 1; }
+      body { cursor:auto; }
+      #cur-o,#cur-i { display:none; }
+      #tele-strip { display:none; }
+      #manifesto { padding:8rem 6vw 7rem; }
+      .mod-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width: 600px) {
+      .cta-btns { flex-direction:column;align-items:center; }
+      .btn { width:100%;max-width:300px;text-align:center; }
+    }
+  </style>
+</head>
+<body>
+
+
+  <!-- BOOT SCREEN -->
+  <div id="boot">
+    <div class="boot-inner">
+      <div class="boot-sig">
+        <div class="boot-sig-bar"></div>
+        <div>
+          <div class="boot-sig-name">MRSAD</div>
+          <div class="boot-sig-sub">Monitoring Runtime Sentinel &amp; Autonomous Defense · v1.0</div>
+          <div class="boot-sig-ar">مرصاد — منظومة الدفاع</div>
+        </div>
+      </div>
+      <div class="boot-divider"></div>
+
+      <div class="boot-ln" id="bl-1">
+        <span class="bk">[  OK  ]</span>
+        <span class="bt">Loading eBPF hooks via <span class="ba">Falco</span>... sensor layer armed</span>
+      </div>
+      <div class="boot-ln" id="bl-2">
+        <span class="bk">[  OK  ]</span>
+        <span class="bt">Establishing <span class="ba">NATS</span> event pipeline... message bus operational</span>
+      </div>
+      <div class="boot-ln" id="bl-3">
+        <span class="bk">[  OK  ]</span>
+        <span class="bt">Injecting <span class="ba">Rego</span> policies into OPA brain...</span>
+      </div>
+      <div class="boot-ln" id="bl-4">
+        <span class="bs">[ WAIT ]</span>
+        <span class="bt">Activating <span class="ba">Go</span> Response Orchestrator... handshake pending</span>
+      </div>
+      <div class="boot-ln" id="bl-5">
+        <span class="bk">[  OK  ]</span>
+        <span class="bt">Go Orchestrator online — <span class="ba">autonomous response</span> protocols active</span>
+      </div>
+      <div class="boot-ln" id="bl-6">
+        <span class="bk">[  OK  ]</span>
+        <span class="bt">PostgreSQL evidence store initialized — forensic state <span class="ba">READY</span></span>
+      </div>
+      <div class="boot-ln" id="bl-7">
+        <span class="bk">[  OK  ]</span>
+        <span class="bt">Behavioral AI model loaded </span>
+      </div>
+      <div class="boot-ln" id="bl-8">
+        <span class="bs">[ INFO ]</span>
+        <span class="bt">SYSTEM STATE: <span class="ba">AWAITING FINAL DEPLOYMENT</span></span>
+      </div>
+
+      <div class="boot-fin" id="boot-fin">
+        <div class="boot-status">MRSAD SENTINEL FULLY OPERATIONAL</div>
+        <div class="boot-bar-bg">
+          <div class="boot-bar-fill" id="boot-bar"></div>
+          <div class="boot-bar-pct" id="boot-pct">0%</div>
+        </div>
+        <div class="boot-class">Classification: SOVEREIGN RESTRICTED &nbsp;·&nbsp; Build: 2026 Mode: PRE-DEPLOYMENT</div>
+      </div>
+    </div>
+  </div>
+  <div id="glitch"></div>
+
+  <!-- ═══════════════ INTRO VIDEO ═══════════════ -->
+  <div id="intro-video-wrap">
+    <div id="intro-vid-box">
+      <video id="intro-vid" playsinline preload="auto">
+        <source src="https://res.cloudinary.com/dxshrigz4/video/upload/q_auto/v1775851883/mrsad_video_ninbgy.mp4" type="video/mp4">
+      </video>
+      <div id="vid-buffering">[ BUFFERING... ]<br><span>LOADING STREAM</span></div>
+      <button id="sound-btn" title="Click for sound">🔇</button>
+    </div>
+    <button id="skip-vid">[ SKIP SEQUENCE ]</button>
+  </div>
+
+  <!-- CURSOR -->
+  <div id="cur-o"><div class="cr"><span class="ct ct-tl"></span><span class="ct ct-tr"></span><span class="ct ct-bl"></span><span class="ct ct-br"></span></div></div>
+  <div id="cur-i"></div>
+
+  <!-- BACKGROUNDS -->
+  <canvas id="gl-canvas"></canvas>
+  <canvas id="pt-canvas"></canvas>
+  <canvas id="hex-canvas"></canvas>
+  <div id="scanline"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+
+  <!-- TELEMETRY STRIP -->
+  <div id="tele-strip">
+    <div class="strip-track" id="strip-track">
+      <div class="tsi"><span class="tss"></span>NODE<span class="tsv">MRSAD-CORE</span></div>
+      <div class="tsi"><span class="tss"></span>BUILD<span class="tsv">2026.MRSAD.01</span></div>
+      <div class="tsi"><span class="tss"></span>STATUS<span class="tsv">PRE-DEPLOYMENT</span></div>
+      <div class="tsi"><span class="tss"></span>FALCO<span class="tsv">ARMED</span></div>
+      <div class="tsi"><span class="tss"></span>NATS<span class="tsv">PIPELINE ACTIVE</span></div>
+      <div class="tsi"><span class="tss"></span>GO ORCHESTRATOR<span class="tsv">STANDBY</span></div>
+      <div class="tsi"><span class="tss"></span>CLEARANCE<span class="tsv">LEVEL 5</span></div>
+      <div class="tsi"><span class="tss"></span>COMPILATION<span class="tsv">65%</span></div>
+      <div class="tsi"><span class="tss"></span>THREATS BLOCKED<span class="tsv">MONITORING</span></div>
+      <!-- duplicate for loop -->
+      <div class="tsi"><span class="tss"></span>NODE<span class="tsv">MRSAD-CORE</span></div>
+      <div class="tsi"><span class="tss"></span>BUILD<span class="tsv">2026.MRSAD.01</span></div>
+      <div class="tsi"><span class="tss"></span>STATUS<span class="tsv">PRE-DEPLOYMENT</span></div>
+      <div class="tsi"><span class="tss"></span>FALCO<span class="tsv">ARMED</span></div>
+      <div class="tsi"><span class="tss"></span>NATS<span class="tsv">PIPELINE ACTIVE</span></div>
+      <div class="tsi"><span class="tss"></span>OPA<span class="tsv">312 RULES</span></div>
+      <div class="tsi"><span class="tss"></span>GO ORCHESTRATOR<span class="tsv">STANDBY</span></div>
+      <div class="tsi"><span class="tss"></span>CLEARANCE<span class="tsv">LEVEL 5</span></div>
+      <div class="tsi"><span class="tss"></span>COMPILATION<span class="tsv">65%</span></div>
+      <div class="tsi"><span class="tss"></span>THREATS BLOCKED<span class="tsv">MONITORING</span></div>
+    </div>
+  </div>
+
+  <!-- RESTRICTED ACCESS MODAL -->
+  <div id="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <span class="modal-corner mc-tl"></span>
+      <span class="modal-corner mc-tr"></span>
+      <span class="modal-corner mc-bl"></span>
+      <span class="modal-corner mc-br"></span>
+
+      <div class="modal-eyebrow">
+        <div class="modal-eyebrow-dot"></div>
+        ACCESS RESTRICTED · وصول مقيد
+      </div>
+
+      <div class="modal-title-en">Dashboard Locked</div>
+      <div class="modal-title-ar">لوحة القيادة مُقفلة مؤقتاً</div>
+
+      <div class="modal-divider"></div>
+
+      <div class="modal-body-ar">
+        الوصول مقيد. المنظومة تخضع للاختبارات الهندسية النهائية استعداداً للمناقشة الرسمية. سيُتاح الوصول الكامل عقب إتمام عملية التحقق والاعتماد.
+      </div>
+
+      <div class="modal-body-en">
+        The system is undergoing final engineering tests<br>
+        in preparation for official thesis defense.<br>
+        Full access will be granted upon completion.
+      </div>
+
+      <div class="modal-status">
+        <div class="modal-status-dot"></div>
+        <div class="modal-status-txt">&gt; COMPILING AUTONOMOUS MODULES... 65% COMPLETE</div>
+      </div>
+
+      <button class="modal-close" id="modal-close-btn">[ ACKNOWLEDGED — CLOSE ]</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ NAVIGATION ═══════════════ -->
+<nav class="cl">
+  <div class="nav-logo">MRSAD</div>
+
+  <div class="nav-links">
+    <a href="#manifesto">Doctrine</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#calibration">Calibration</a>
+    <a href="#modules">Modules</a>
+    <a href="#capabilities">Capabilities</a>
+    <a href="#terminal-sec">Status</a>
+  </div>
+
+
+</nav>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <section id="hero" class="cl">
+
+    <div class="hcorner hc-tl">
+      NODE / MRSAD-CORE<br>
+      MODE / AUTONOMOUS<br>
+      LAT &nbsp;/ 32.07°N 36.09°E
+    </div>
+    <div class="hcorner hc-tr">
+      BUILD / 2026.MRSAD.01<br>
+      KERNEL / ARMED<br>
+      CLEARANCE / L5
+    </div>
+    <div class="hcorner hc-bl">
+      FALCO / ACTIVE<br>
+      OPA / ENFORCING<br>
+      NATS / LIVE
+    </div>
+    <div class="hcorner hc-br">
+      GO / ORCHESTRATING<br>
+      RT / ZERO-TRUST<br>
+      NODE / SOVEREIGN
+    </div>
+
+  
+
+    <div class="hero-title-wrap">
+      <div id="mrsad-shadow" aria-hidden="true">MRSAD</div>
+      <div id="mrsad-ghost" aria-hidden="true">MRSAD</div>
+      <div id="mrsad-title">MRSAD</div>
+      <div class="tb tb-tl"></div>
+      <div class="tb tb-tr"></div>
+      <div class="tb tb-bl"></div>
+      <div class="tb tb-br"></div>
+    </div>
+
+    <div class="hero-ar-title" id="hero-ar-title">
+     Monitoring Runtime Sentinel &amp; Autonomous Defense
+    </div>
+
+    <div class="hero-rule"></div>
+    <div class="hero-sub-ar" id="hero-sub-ar">
+       الجيل القادم من الدفاع الذاتي وقت التشغيل — منظومة تراقب، تقرر، وتعزل التهديدات باستقلالية كاملة.
+    </div>
+    <div class="hero-sub-en" id="hero-sub-en">the Next Generation of Autonomous Runtime Defense</div>
+
+    <!-- Progress Bar -->
+    <div class="hero-progress-wrap" id="hero-progress-wrap">
+      <div class="hpw-label">
+        <span>&gt; COMPILING AUTONOMOUS MODULES...</span>
+        <span class="hpw-pct" id="hpw-pct">0%</span>
+      </div>
+      <div class="hpw-bar-bg">
+        <div class="hpw-bar-fill" id="hpw-fill"></div>
+        <div class="hpw-bar-glow" id="hpw-glow"></div>
+      </div>
+    </div>
+
+    <div class="scroll-hint">
+      <div class="scroll-line"></div>
+      SCROLL
+    </div>
+  </section>
+
+  <!-- ═══════════════ MANIFESTO ═══════════════ -->
+  <section id="manifesto" class="cl">
+    <div style="max-width:1440px;margin:0 auto;padding:0 8vw;position:relative;">
+
+      <div class="slabel rleft">01 — DOCTRINE</div>
+
+      <div class="mani-quote-block rup">
+        <div class="mani-quote-en">
+          The world is reactive. MRSAD is proactive.<br>
+          We monitor the runtime where others are blind.
+        </div>
+        <div class="mani-quote-accent">// Core doctrine · sovereign sentinel · 2026</div>
+      </div>
+
+      <div class="mani-body" id="mani-body"></div>
+
+      <div class="mani-ar rup">
+        بينما يستجيب الآخرون للتهديد بعد وقوعه، <strong>مرصاد</strong> يراقب ويتصرف — قبل أن تُشنّ الضربة الأولى.<br>
+        نظام دفاعي مستقل يعمل في صمت كامل، يتسلل إلى طبقة وقت التشغيل حيث تتشكّل التهديدات،
+        ويُنفّذ القرار في ميكروثانية — دون انتظار أمر بشري.
+      </div>
+
+      <div class="mani-deco" aria-hidden="true">م</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ ARCHITECTURE ═══════════════ -->
+  <section id="architecture" class="cl">
+    <div style="max-width:1440px;margin:0 auto;padding:0 6vw;position:relative;">
+
+      <div class="slabel rleft">02 — ARCHITECTURE</div>
+
+      <div class="arch-layout">
+        <div class="arch-diagram rup">
+
+          <div class="arch-layer rup" id="arch-l3">
+            <div class="al-num">// LAYER 03 — GO RESPONSE ORCHESTRATOR</div>
+            <div class="al-title">Sovereign Response</div>
+            <div class="al-desc">Autonomous containment, process isolation, and zero-trust enforcement before breach propagation. Powered by Go.</div>
+            <div class="al-tags">
+              <span class="al-tag">Go Orchestrator</span>
+              <span class="al-tag">Containment</span>
+              <span class="al-tag">Zero-Trust</span>
+              <span class="al-tag">Audit Trail</span>
+            </div>
+            <div class="al-threat-ind" id="neu-ind">
+              <div class="al-tid"></div> THREAT NEUTRALIZED
+            </div>
+          </div>
+
+          <div class="arch-connector">
+            <div class="arch-connector-line"></div>
+            <div class="acd" style="animation-delay:0s;"></div>
+            <div class="acd" style="animation-delay:1.5s;"></div>
+          </div>
+
+          <div class="arch-layer rup" id="arch-l2" style="position:relative;">
+            <div class="arch-neutralize"></div>
+            <div class="al-num">// LAYER 02 — OPA/REGO POLICY BRAIN</div>
+            <div class="al-title">MRSAD Intelligence Engine</div>
+            <div class="al-desc">OPA/Rego policy engine synthesizing syscall patterns, memory state, and NATS event streams into real-time threat decisions.</div>
+            <div class="al-tags">
+              <span class="al-tag">OPA/Rego</span>
+              <span class="al-tag">NATS Event Bus</span>
+              <span class="al-tag">4.2M Signatures</span>
+              <span class="al-tag">Zero-Day Detection</span>
+            </div>
+          </div>
+
+          <div class="arch-connector">
+            <div class="arch-connector-line"></div>
+            <div class="acd" style="animation-delay:0.8s;"></div>
+            <div class="act"></div>
+          </div>
+
+          <div class="arch-layer rup" id="arch-l1">
+            <div class="al-num">// LAYER 01 — FALCO SENSORS (eBPF)</div>
+            <div class="al-title">Runtime Kernel Layer</div>
+            <div class="al-desc">Deep eBPF instrumentation via Falco — syscall hooks, memory integrity monitors, and container behavioral profilers.</div>
+            <div class="al-tags">
+              <span class="al-tag">Falco / eBPF</span>
+              <span class="al-tag">Syscall Hooks</span>
+              <span class="al-tag">Process Tracer</span>
+              <span class="al-tag">312 Entry Points</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="arch-text">
+          <div class="arch-headline rup">
+            How <em>MRSAD</em> sees<br>what others miss
+          </div>
+          <div class="arch-body rup">
+            Most security tools operate at the network perimeter — waiting for threats to reveal themselves. MRSAD operates inside the runtime stack, where every process, memory allocation, and system call is under continuous sovereign surveillance via Falco sensors, NATS event pipelines, and OPA policy enforcement.
+          </div>
+
+          <div class="arch-features">
+            <div class="arch-feat rup">
+              <div class="af-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.75)" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                </svg>
+              </div>
+              <div>
+                <div class="af-title">Falco eBPF Sensors</div>
+                <div class="af-desc">Eyes inside every container. Every syscall. Every memory page. Continuously.</div>
+              </div>
+            </div>
+            <div class="arch-feat rup">
+              <div class="af-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.75)" stroke-width="1.5">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
+              </div>
+              <div>
+                <div class="af-title">OPA/Rego Policy Brain</div>
+                <div class="af-desc">Security-as-Code: strict Rego policies evaluated at microsecond speed via NATS event bus.</div>
+              </div>
+            </div>
+            <div class="arch-feat rup">
+              <div class="af-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.75)" stroke-width="1.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="af-title">Go Response Orchestrator</div>
+                <div class="af-desc">Zero-trust containment executes before the attacker realizes they have been detected.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ LIVE CALIBRATION TERMINAL ═══════════════ -->
+  <section id="calibration" class="cl">
+    <div style="max-width:1440px;margin:0 auto;padding:0 6vw;position:relative;">
+
+      <div class="slabel rleft">03 — LIVE CALIBRATION</div>
+
+      <div class="cal-layout">
+
+        <!-- Terminal Window -->
+        <div class="cal-terminal rup">
+          <div class="cal-bar">
+            <div class="cal-dot cal-dot-r"></div>
+            <div class="cal-dot cal-dot-y"></div>
+            <div class="cal-dot cal-dot-g"></div>
+            <div class="cal-title-bar">MRSAD — SENTINEL INIT CONSOLE v1.0</div>
+            <div class="cal-ver">PRE-DEPLOY</div>
+          </div>
+          <div class="cal-body" id="cal-body">
+            <!-- Lines injected by JS -->
+            <div class="cal-state-line" id="cal-state-line" style="display:none">
+              <div class="cal-state-dot"></div>
+              <div class="cal-state-txt" id="cal-state-txt">SYSTEM STATE: AWAITING FINAL DEPLOYMENT.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="cal-panel rup">
+          <div class="cal-headline">
+            Final <em>calibration</em><br>in progress
+          </div>
+          <div class="cal-desc">
+            تخضع المنظومة حالياً لمرحلة <strong>المعايرة النهائية</strong> قبل الإطلاق الرسمي. كل مكوّن يُختبر تحت ضغط متمنيّا تحقيق أعلى مستويات الأداء — من مستشعرات Falco، مروراً بـ NATS، وصولاً إلى منطق OPA.
+          </div>
+          <div class="cal-stack">
+            <div class="cal-chip">Falco / eBPF</div>
+            <div class="cal-chip">NATS Event Bus</div>
+            <div class="cal-chip">OPA / Rego</div>
+            <div class="cal-chip">Go 1.22</div>
+            <div class="cal-chip">Docker / K8s</div>
+            <div class="cal-chip">PostgreSQL</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ MODULE CARDS ═══════════════ -->
+  <section id="modules" class="cl">
+    <div style="max-width:1440px;margin:0 auto;padding:0 6vw;position:relative;">
+
+      <div class="slabel rleft">04 — MODULES UNDER CALIBRATION</div>
+
+      <div class="mod-grid">
+
+        <!-- Card 1: Runtime Sensors -->
+        <div class="mod-card" id="mc-1">
+          <span class="ca ca-tl"></span><span class="ca ca-br"></span>
+          <div class="mod-num">// MODULE 01 · FALCO LAYER</div>
+          <div class="mod-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+          </div>
+          <div class="mod-title-en">Runtime Sensors</div>
+          <div class="mod-title-ar">مستشعرات وقت التشغيل</div>
+          <div class="mod-desc">تحليل دقيق لسلوك الحاويات — كل استدعاء نظام، كل عملية، كل تخصيص ذاكرة تحت المراقبة المستمرة عبر eBPF.</div>
+          <div class="mod-status-bar">
+            <div class="mod-status-line">
+              <div class="mod-status-dot"></div>
+              <span>&gt; Calibrating Falco rules...</span>
+            </div>
+            <div class="mod-progress">
+              <div class="mod-progress-fill" style="animation-delay: 0s;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Policy Brain -->
+        <div class="mod-card" id="mc-2">
+          <span class="ca ca-tl"></span><span class="ca ca-br"></span>
+          <div class="mod-num">// MODULE 02 · OPA/REGO BRAIN</div>
+          <div class="mod-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
+              <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+            </svg>
+          </div>
+          <div class="mod-title-en">Policy Brain</div>
+          <div class="mod-title-ar">محرك القرار الآلي</div>
+          <div class="mod-desc">سياسات أمنية صارمة ككود — محرك OPA يقيم قاعدة Rego في الوقت الفعلي لكل حدث أمني.</div>
+          <div class="mod-status-bar">
+            <div class="mod-status-line">
+              <div class="mod-status-dot" style="background:var(--c);box-shadow:0 0 6px var(--c);"></div>
+              <span>&gt; Verifying OPA syntax...</span>
+            </div>
+            <div class="mod-progress">
+              <div class="mod-progress-fill" style="animation-delay: 0.8s;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Evidence Pack -->
+        <div class="mod-card" id="mc-3">
+          <span class="ca ca-tl"></span><span class="ca ca-br"></span>
+          <div class="mod-num">// MODULE 03 · FORENSIC STORE</div>
+          <div class="mod-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <div class="mod-title-en">Evidence Pack</div>
+          <div class="mod-title-ar">الحقيبة الجنائية</div>
+          <div class="mod-desc">توثيق فوري للأدلة الرقمية — سجل جنائي غير قابل للتغيير لكل حادثة أمنية مخزّن في PostgreSQL.</div>
+          <div class="mod-status-bar">
+            <div class="mod-status-line">
+              <div class="mod-status-dot" style="background:rgba(0,220,120,0.8);box-shadow:0 0 6px rgba(0,220,120,0.6);animation:none;"></div>
+              <span>&gt; Initializing PostgreSQL states...</span>
+            </div>
+            <div class="mod-progress">
+              <div class="mod-progress-fill" style="animation-delay: 1.6s;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CAPABILITIES / BENTO ═══════════════ -->
+  <section id="capabilities" class="cl">
+    <div class="bento-inner">
+      <div class="slabel rleft">05 — CAPABILITIES</div>
+      <div class="bento-grid">
+
+        <!-- CARD A -->
+        <div class="bc bc-a">
+          <span class="ca ca-tl"></span><span class="ca ca-br"></span>
+          <div class="bc-threat-badge"><div class="bc-thr-dot"></div> THREAT STREAM ACTIVE</div>
+          <div class="bc-tag">Core Defense · الدفاع الأساسي · SIG/AUTONOMOUS</div>
+          <div class="bc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+          </div>
+          <div class="bc-en">Autonomous Defense</div>
+          <div class="bc-ar">الدفاع الذاتي المستقل</div>
+          <p class="bc-body">MRSAD operates as a fully autonomous sentinel — detecting, containing, and neutralizing threats in the runtime layer without waiting for human intervention. The system thinks in microseconds, acts in silence, and leaves an immutable forensic record for every decision it makes.</p>
+          <canvas id="radar-canvas" width="260" height="260"></canvas>
+          <div class="bc-chip">AUTONOMOUS · ARMED</div>
+        </div>
+
+        <!-- CARD B -->
+        <div class="bc bc-b">
+          <span class="ca ca-tl"></span><span class="ca ca-br"></span>
+          <div class="bc-tag">Forensics · الجنائيات · SIG/FORENSIC</div>
+          <div class="bc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+              <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </div>
+          <div class="bc-en">Runtime Forensics</div>
+          <div class="bc-ar">التحليل الجنائي الفوري</div>
+          <p class="bc-body">Deep memory inspection and syscall tracing of every process. Complete sovereign audit trail preserved for post-incident analysis.</p>
+          <div class="proc-tree">
+            <div class="pn"><div class="pn-d"></div> kernel / sched</div>
+            <div class="pn"><div class="pn-line"></div><div class="pn-d"></div> sys / process_mgr</div>
+            <div class="pn threat"><div class="pn-line"></div><div class="pn-d"></div> ← anomaly detected</div>
+            <div class="pn blocked"><div class="pn-line"></div><div class="pn-d"></div> ✓ contained + logged</div>
+          </div>
+          <div class="bc-chip">312 HOOKS ACTIVE</div>
+        </div>
+
+        <!-- CARD C -->
+        <div class="bc bc-c">
+          <span class="ca ca-tl"></span><span class="ca ca-br"></span>
+          <div class="bc-tag">Intelligence · الاستخبارات · SIG/PREDICT</div>
+          <div class="bc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="bc-en">Predictive Threat Graph</div>
+          <div class="bc-ar">خريطة التهديدات التنبؤية</div>
+          <p class="bc-body">ML-driven attack path modeling that maps likely adversary trajectories across your environment before the first move is made.</p>
+          <div class="bc-chip">GRAPH LIVE</div>
+        </div>
+
+        <!-- CARD D -->
+        <div class="bc bc-d">
+          <span class="ca ca-tl"></span><span class="ca ca-br"></span>
+          <div class="bc-tag">AI Core · النواة الذكية</div>
+          <div class="bc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+            </svg>
+          </div>
+          <div class="bc-en">Threat Prediction</div>
+          <div class="bc-ar">التنبؤ بالتهديدات</div>
+          <p class="bc-body" style="font-size:0.78rem">Behavioral model that anticipates attack vectors before execution completes.</p>
+          <canvas id="neural-canvas" width="200" height="80"></canvas>
+          <div class="bc-chip">4.2M PATTERNS</div>
+        </div>
+
+        <!-- CARD E -->
+        <div class="bc bc-e">
+          <span class="ca ca-tl"></span><span class="ca ca-br"></span>
+          <div class="bc-tag">Protection · الحماية</div>
+          <div class="bc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
+              <rect x="3" y="11" width="18" height="11" rx="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+          </div>
+          <div class="bc-en">Zero-Day Shield</div>
+          <div class="bc-ar">درع اليوم الصفر</div>
+          <p class="bc-body" style="font-size:0.78rem">Heuristic containment of unknown exploit patterns. No signature required.</p>
+          <div class="bc-chip">NO-SIGNATURE</div>
+        </div>
+
+        <!-- CARD F -->
+        <div class="bc bc-f">
+          <span class="ca ca-tl"></span><span class="ca ca-br"></span>
+          <div class="bc-tag">Automation · الأتمتة</div>
+          <div class="bc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+              <polyline points="1 20 1 14 7 14"/>
+            </svg>
+          </div>
+          <div class="bc-en">Adaptive Response</div>
+          <div class="bc-ar">الاستجابة التكيفية</div>
+          <p class="bc-body" style="font-size:0.78rem">Self-updating playbooks that evolve with each detected threat pattern in real time.</p>
+          <div class="bc-chip">SELF-EVOLVING</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ TERMINAL + STATUS ═══════════════ -->
+  <section id="terminal-sec" class="cl">
+    <div style="max-width:1440px;margin:0 auto;padding:0 6vw;position:relative;">
+      <div class="slabel rleft">06 — SYSTEM STATUS</div>
+
+      <div class="term-layout">
+
+        <div class="terminal rup">
+          <div class="term-bar">
+            <div class="td td-r"></div>
+            <div class="td td-y"></div>
+            <div class="td td-g"></div>
+            <div class="t-ttl">MRSAD — SENTINEL LIVE CONSOLE</div>
+            <div class="t-ver">v1.0-ALPHA</div>
+          </div>
+          <div class="term-body">
+            <div id="log-wrap">
+              <div class="log-ln" data-delay="150"><span class="l-ts">[00:00:01]</span><span class="l-body">Falco eBPF kernel module loaded — runtime hooks injected</span></div>
+              <div class="log-ln" data-delay="520"><span class="l-ts">[00:00:02]</span><span class="l-ok">✓ NATS event pipeline established — message bus operational</span></div>
+              <div class="log-ln" data-delay="950"><span class="l-ts">[00:00:04]</span><span class="l-ok">✓ OPA loaded —  Rego rules evaluated across all namespaces</span></div>
+              <div class="log-ln" data-delay="1400"><span class="l-ts">[00:00:07]</span><span class="l-ok">✓ Go Orchestrator online — autonomous response protocols active</span></div>
+              <div class="log-ln" data-delay="1950"><span class="l-ts">[00:00:09]</span><span class="l-warn">⚠ Anomalous beacon detected — port 0x115C — containment initiated</span></div>
+              <div class="log-ln" data-delay="2550"><span class="l-ts">[00:00:11]</span><span class="l-ok">✓ Threat neutralized — PostgreSQL forensic state updated</span></div>
+              <div class="log-ln" data-delay="3200"><span class="l-ts">[00:00:14]</span><span class="l-inf">» Sentinel Sequence complete — AWAITING FINAL DEPLOYMENT</span></div>
+              <div class="log-ln" id="live-cursor" data-delay="4000"><span class="l-ts">[LIVE]</span><span class="l-body"><span class="blink"></span></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-panel rup">
+
+          <div class="sp-blk">
+            <div class="sp-blk-num">SYS/01</div>
+            <div class="sp-lbl">System State</div>
+            <div class="sp-val c">OPERATIONAL</div>
+            <div class="sp-sub">All sentinel layers armed and active</div>
+            <div class="sp-bar-bg"><div class="sp-bar-fill" data-w="100"></div></div>
+          </div>
+
+          <div class="sp-blk">
+            <div class="sp-blk-num">SYS/02</div>
+            <div class="sp-lbl">Compilation</div>
+            <div class="sp-val">65% COMPLETE</div>
+            <div class="sp-sub">Autonomous modules compiling</div>
+            <div class="sp-bar-bg"><div class="sp-bar-fill" data-w="89"></div></div>
+          </div>
+
+          <div class="sp-blk">
+            <div class="sp-blk-num">SYS/03</div>
+            <div class="sp-lbl">OPA Engine</div>
+            <div class="sp-val c">ENFORCED</div>
+            <div class="sp-sub"> Rego rules active</div>
+            <div class="sp-bar-bg"><div class="sp-bar-fill" data-w="95"></div></div>
+          </div>
+
+       <div class="status-action-btns rup" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; position: relative; z-index: 20;">
+            <button class="btn btn-primary" id="dashboard-btn" style="width: 100%; font-size: 0.65rem; padding: 1.1rem;">
+              الوصول للوحة القيادة (Access Dashboard)
+            </button>
+            <button class="btn btn-ghost" id="demo-btn" style="width: 100%; font-size: 0.65rem; padding: 1.1rem;">
+  طلب عرض تقني / Request Demo
+</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+ 
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="cl">
+    <div class="foot-main">
+      <div>
+        <div class="foot-logo">MRSAD</div>
+        <div class="foot-tagline">Monitoring Runtime Sentinel &amp; Autonomous Defense</div>
+        <div class="foot-chips">
+          <span class="foot-chip">Falco</span>
+          <span class="foot-chip">NATS</span>
+          <span class="foot-chip">OPA/Rego</span>
+          <span class="foot-chip">Go</span>
+          <span class="foot-chip">Docker/K8s</span>
+          <span class="foot-chip">PostgreSQL</span>
+        </div>
+      </div>
+      <div class="foot-ar">
+        نظام دفاعي مستقل للبيئات الحاوية<br>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div class="foot-copy">© 2026 MRSAD · All rights reserved</div>
+      <div class="foot-build">Build: 2026.MRSAD.01 </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════
+       JAVASCRIPT
+  ═══════════════════════════════════════════════════ -->
+  <script>
+  /* ════════════════════════════════
+     1. BOOT SEQUENCE + VIDEO
+  ════════════════════════════════ */
+  (function initBoot() {
+
+    /* ── عناصر الـ DOM ── */
+    var lines   = [1,2,3,4,5,6,7,8].map(function(i){ return document.getElementById('bl-'+i); });
+    var fin     = document.getElementById('boot-fin');
+    var bar     = document.getElementById('boot-bar');
+    var pct     = document.getElementById('boot-pct');
+    var boot    = document.getElementById('boot');
+    var glitch  = document.getElementById('glitch');
+    var vidWrap = document.getElementById('intro-video-wrap');
+    var vid     = document.getElementById('intro-vid');
+    var skipBtn = document.getElementById('skip-vid');
+    var bufMsg  = document.getElementById('vid-buffering');
+    var barVal  = 0;
+    var videoDone = false;   /* حماية من استدعاء finishVideo مرتين */
+
+    /* ══════════════════════════════════════
+       انيميشن سطور الـ Boot
+    ══════════════════════════════════════ */
+    lines.forEach(function(el, i) {
+      if (!el) return;
+      setTimeout(function(){ el.classList.add('on'); }, 350 + i * 310);
+    });
+
+    /* ══════════════════════════════════════
+       شريط التقدم — يبدأ بعد آخر سطر
+    ══════════════════════════════════════ */
+    setTimeout(function() {
+      if (fin) fin.style.opacity = '1';
+      (function fill() {
+        barVal = Math.min(barVal + Math.random() * 3.5 + 0.8, 100);
+        if (bar) bar.style.width = barVal + '%';
+        if (pct) { pct.textContent = Math.floor(barVal) + '%'; pct.style.left = barVal + '%'; }
+        if (barVal < 100) requestAnimationFrame(fill);
+        else onBootComplete();
+      })();
+    }, 350 + 8 * 310 + 400);
+
+    /* ══════════════════════════════════════
+       اكتمل الـ Boot → glitch → فيديو
+    ══════════════════════════════════════ */
+    function onBootComplete() {
+      setTimeout(function() {
+        if (glitch) {
+          glitch.style.opacity = '1';
+          setTimeout(function(){ glitch.style.opacity = '0';   }, 80);
+          setTimeout(function(){ glitch.style.opacity = '0.6'; }, 140);
+          setTimeout(function(){ glitch.style.opacity = '0';   }, 200);
+        }
+        setTimeout(function() {
+          if (boot) boot.classList.add('out');
+          showVideo();
+        }, 320);
+      }, 700);
+    }
+
+    /* ══════════════════════════════════════
+       عرض الفيديو وتشغيله
+    ══════════════════════════════════════ */
+    function showVideo() {
+      if (!vidWrap || !vid) { startMainSite(); return; }
+
+      var soundBtn = document.getElementById('sound-btn');
+
+      /* أظهر الـ overlay */
+      vidWrap.classList.add('active');
+      vid.classList.add('ready');
+
+      /* ═══ زر التخطي ═══ */
+      if (skipBtn) skipBtn.addEventListener('click', finishVideo, { once: true });
+
+      /* ═══ انتهى الفيديو ═══ */
+      vid.addEventListener('ended', finishVideo, { once: true });
+
+      /* ═══ خطأ تحميل ═══ */
+      vid.addEventListener('error', function() { finishVideo(); }, { once: true });
+
+      /* ═══ زر الصوت ═══ */
+      if (soundBtn) {
+        soundBtn.addEventListener('click', function() {
+          vid.muted = !vid.muted;
+          vid.volume = 1;
+          soundBtn.textContent = vid.muted ? '🔇' : '🔊';
+        });
+      }
+
+      /* ══════════════════════════════════════════
+         تشغيل الفيديو من الصفر بعد Boot مباشرة
+         — نحاول بصوت أولاً، إن رفض المتصفح نشغّل مكتوماً
+      ══════════════════════════════════════════ */
+      vid.currentTime = 0;           // ← إعادة للبداية دائماً
+      vid.muted  = false;
+      vid.volume = 1;
+
+      var p = vid.play();
+
+      if (p && typeof p.then === 'function') {
+        p.then(function() {
+          /* ✅ يعمل بصوت */
+          if (soundBtn) soundBtn.textContent = '🔊';
+        }).catch(function() {
+          /* 🔇 الصوت محظور — نشغّل مكتوماً (الفيديو يعمل دائماً) */
+          vid.muted = true;
+          if (soundBtn) soundBtn.textContent = '🔇';
+          vid.currentTime = 0;
+          vid.play().catch(function() { finishVideo(); });
+        });
+      }
+
+      /* صمام أمان 30 ثانية */
+      setTimeout(function() { finishVideo(); }, 30000);
+    }
+
+    /* ══════════════════════════════════════
+       إنهاء الفيديو → ادخل الموقع
+    ══════════════════════════════════════ */
+    function finishVideo() {
+      if (videoDone) return;   /* منع التكرار */
+      videoDone = true;
+      if (vidWrap) {
+        vidWrap.style.opacity = '0';
+        vidWrap.style.pointerEvents = 'none';
+      }
+      setTimeout(function() {
+        if (vid) vid.pause();
+        startMainSite();
+      }, 1200);
+    }
+
+    /* ══════════════════════════════════════
+       بدء الموقع الرئيسي
+    ══════════════════════════════════════ */
+    function startMainSite() {
+      document.body.classList.add('loaded');
+      initHeroTimeline();
+    }
+
+  })();
+
+  /* ════════════════════════════════
+     2. HERO TIMELINE
+  ════════════════════════════════ */
+/* ════════════════════════════════
+     2. HERO TIMELINE & TEXT SCRAMBLE
+  ════════════════════════════════ */
+  
+  // 1. كلاس التشويش السيبراني
+  class TextScramble {
+    constructor(el) {
+      this.el    = el;
+      this.chars = '!<>-_\\/[]{}—=+*^?#░▒▓';
+      this.update = this.update.bind(this);
+    }
+    setText(txt) {
+      const len = txt.length;
+      const promise = new Promise(r => this.resolve = r);
+      this.queue = [];
+      for (let i = 0; i < len; i++) {
+        const start = Math.floor(Math.random() * 70);
+        const end   = start + Math.floor(Math.random() * 70);
+        this.queue.push({ to: txt[i], start, end, char: '' });
+      }
+      cancelAnimationFrame(this.frameReq);
+      this.frame = 0;
+      this.update();
+      return promise;
+    }
+    update() {
+      let out = '', complete = 0;
+      for (const item of this.queue) {
+        if (this.frame >= item.end) {
+          complete++;
+          out += item.to;
+        } else if (this.frame >= item.start) {
+          if (!item.char || Math.random() < 0.28) {
+            item.char = this.chars[Math.floor(Math.random() * this.chars.length)];
+          }
+          out += `<span style="color:rgba(0,242,255,0.55)">${item.char}</span>`;
+        } else { out += '<span style="opacity:0">' + item.to + '</span>'; }
+      }
+      this.el.innerHTML = out;
+      if (complete === this.queue.length) this.resolve();
+      else { this.frameReq = requestAnimationFrame(this.update); this.frame++; }
+    }
+  }
+
+  // 2. دالة الدخول السينمائي المعدلة
+  function initHeroTimeline() {
+    // قائمة العناصر التي ستظهر بالتدرج العادي (أزلنا منها الأقواس والاسم)
+    const els = [
+      '.hero-badge',
+      '#hero-ar-title',
+      '.hero-rule',
+      '#hero-sub-ar',
+      '#hero-sub-en',
+      '#hero-progress-wrap',
+      '.hcorner',
+      '.scroll-hint',
+    ];
+
+    els.forEach((sel, i) => {
+      const nodes = document.querySelectorAll(sel);
+      nodes.forEach(el => {
+        setTimeout(() => {
+          el.style.transition = 'opacity 0.9s ease, transform 0.9s ease';
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+        }, 200 + i * 180);
+      });
+    });
+
+    // 3. تطبيق حركة التشويش على كلمة مرصاد
+    const title = document.getElementById('mrsad-title');
+    const tbs = document.querySelectorAll('.tb');
+
+    if (title) {
+      title.style.opacity = '1';
+      const sc = new TextScramble(title);
+      
+      setTimeout(() => {
+        // النص هنا باللغة العربية كما طلبت
+        sc.setText('MRSAD').then(() => {
+          // دخول الأقواس الأربعة بعد اكتمال التشويش باستخدام GSAP
+          if (window.gsap) {
+            tbs.forEach((tb, i) => {
+              const offsets = [[-8,-8], [8,-8], [-8,8], [8,8]];
+              gsap.fromTo(tb,
+                { opacity: 0, x: offsets[i][0], y: offsets[i][1] },
+                { opacity: 1, x: 0, y: 0, duration: 0.55, ease: 'power3.out', delay: i * 0.05 }
+              );
+            });
+          }
+        });
+      }, 300);
+    }
+
+    // 4. حركة شريط التقدم (موجودة أصلاً في كودك وتم الحفاظ عليها)
+    setTimeout(() => {
+      const fill = document.getElementById('hpw-fill');
+      const glow = document.getElementById('hpw-glow');
+      const pctEl = document.getElementById('hpw-pct');
+      if (fill) fill.style.width = '65%';
+      if (glow) glow.style.left = 'calc(65% - 15px)';
+
+      let count = 0;
+      const target = 65;
+      const duration = 2800;
+      const step = target / (duration / 16);
+      const interval = setInterval(() => {
+        count = Math.min(count + step, target);
+        if (pctEl) pctEl.textContent = Math.floor(count) + '%';
+        if (count >= target) clearInterval(interval);
+      }, 16);
+    }, 1600);
+  }
+
+  /* ════════════════════════════════
+     3. CUSTOM CURSOR
+  ════════════════════════════════ */
+  (function initCursor() {
+    const co = document.getElementById('cur-o');
+    const ci = document.getElementById('cur-i');
+    if (!co || !ci) return;
+    let mx = 0, my = 0, cx = 0, cy = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      ci.style.left = mx + 'px'; ci.style.top = my + 'px';
+    });
+    (function loop() {
+      cx += (mx - cx) * 0.12;
+      cy += (my - cy) * 0.12;
+      co.style.left = cx + 'px'; co.style.top = cy + 'px';
+      requestAnimationFrame(loop);
+    })();
+
+    const hoverSels = 'a,button,.bc,.arch-layer,.arch-feat,.mod-card,.cal-chip';
+    document.addEventListener('mouseenter', e => {
+      if (e.target && e.target.matches && e.target.matches(hoverSels))
+        document.body.classList.add('hv');
+    }, true);
+    document.addEventListener('mouseleave', e => {
+      if (e.target && e.target.matches && e.target.matches(hoverSels))
+        document.body.classList.remove('hv');
+    }, true);
+    document.addEventListener('mousedown', () => document.body.classList.add('cl'));
+    document.addEventListener('mouseup',   () => document.body.classList.remove('cl'));
+  })();
+
+  /* ════════════════════════════════
+     4. WEBGL SHADER BACKGROUND
+  ════════════════════════════════ */
+  (function initGL() {
+    const canvas = document.getElementById('gl-canvas');
+    if (!canvas) return;
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!gl) return;
+
+    const vs = `attribute vec2 a_pos; void main(){gl_Position=vec4(a_pos,0.,1.);}`;
+    const fs = `
+      precision mediump float;
+      uniform float u_time;
+      uniform vec2  u_res;
+      void main(){
+        vec2 uv=gl_FragCoord.xy/u_res;
+        vec2 c=uv-0.5;
+        float t=u_time*0.22;
+        vec2 p1=vec2(sin(t*0.65)*0.32-0.18,cos(t*0.48)*0.28-0.12);
+        vec2 p2=vec2(cos(t*0.55)*0.26+0.2,sin(t*0.38+1.2)*0.24+0.14);
+        vec2 p3=vec2(sin(t*0.3+2.4)*0.2,cos(t*0.5+0.8)*0.18);
+        float d1=length(c-p1),d2=length(c-p2),d3=length(c-p3);
+        float g=exp(-d1*d1*7.)*(sin(t*0.28)*0.5+0.5)*0.065
+               +exp(-d2*d2*9.5)*(cos(t*0.36+1.)*0.5+0.5)*0.052
+               +exp(-d3*d3*12.)*(sin(t*0.42+2.)*0.5+0.5)*0.038;
+        float edge=exp(-length(c+vec2(0.38,-0.4))*4.5)*0.042
+                  +exp(-length(c+vec2(-0.32,0.36))*5.2)*0.032;
+        float total=g+edge;
+        float ctr=exp(-length(c)*5.)*0.015;
+        vec3 col=vec3(0.,total*0.82+ctr*0.85,total+ctr);
+        gl_FragColor=vec4(col,1.);
+      }
+    `;
+
+    function mkShader(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src); gl.compileShader(s); return s;
+    }
+    const prog = gl.createProgram();
+    gl.attachShader(prog, mkShader(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog); gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+    const ap = gl.getAttribLocation(prog, 'a_pos');
+    gl.enableVertexAttribArray(ap);
+    gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
+
+    const uT = gl.getUniformLocation(prog, 'u_time');
+    const uR = gl.getUniformLocation(prog, 'u_res');
+
+    function resize() {
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.uniform2f(uR, canvas.width, canvas.height);
+    }
+    resize(); window.addEventListener('resize', resize);
+
+    let start = null;
+    function draw(ts) {
+      if (!start) start = ts;
+      gl.uniform1f(uT, (ts - start) / 1000);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  })();
+
+  /* ════════════════════════════════
+     5. HEX GRID CANVAS
+  ════════════════════════════════ */
+  (function initHexGrid() {
+    const canvas = document.getElementById('hex-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W, H;
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize(); window.addEventListener('resize', resize);
+
+    function drawHex(cx, cy, size) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 180) * (60 * i - 30);
+        const x = cx + size * Math.cos(angle);
+        const y = cy + size * Math.sin(angle);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+    }
+
+    const size = 28;
+    const w = size * Math.sqrt(3);
+    const h = size * 2;
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      const cols = Math.ceil(W / w) + 2;
+      const rows = Math.ceil(H / (h * 0.75)) + 2;
+
+      for (let row = -1; row < rows; row++) {
+        for (let col = -1; col < cols; col++) {
+          const x = col * w + (row % 2 === 0 ? 0 : w / 2);
+          const y = row * h * 0.75;
+
+          const distFromCenter = Math.sqrt(
+            Math.pow((x - W/2) / W, 2) + Math.pow((y - H/2) / H, 2)
+          );
+          const alpha = Math.max(0, 0.06 - distFromCenter * 0.08);
+
+          drawHex(x, y, size - 1);
+          ctx.strokeStyle = `rgba(0,242,255,${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    draw();
+    window.addEventListener('resize', draw);
+  })();
+
+  /* ════════════════════════════════
+     6. PARTICLE FIELD
+  ════════════════════════════════ */
+  (function initParticles() {
+    const canvas = document.getElementById('pt-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W, H;
+
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    const pts = Array.from({ length: 85 }, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.22,
+      vy: (Math.random() - 0.5) * 0.22,
+      r:  Math.random() * 1.2 + 0.3,
+    }));
+
+    let mx = W/2, my = H/2;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of pts) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        const dx = p.x - mx, dy = p.y - my;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 120) {
+          const f = (120 - dist) / 120 * 0.008;
+          p.vx += dx/dist * f; p.vy += dy/dist * f;
+        }
+        const speed = Math.sqrt(p.vx*p.vx + p.vy*p.vy);
+        if (speed > 0.6) { p.vx = p.vx/speed*0.6; p.vy = p.vy/speed*0.6; }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(0,242,255,0.18)';
+        ctx.fill();
+      }
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i+1; j < pts.length; j++) {
+          const dx = pts[i].x - pts[j].x;
+          const dy = pts[i].y - pts[j].y;
+          const d = dx*dx + dy*dy;
+          if (d < 8100) {
+            const alpha = (1 - d/8100) * 0.06;
+            ctx.beginPath();
+            ctx.moveTo(pts[i].x, pts[i].y);
+            ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.strokeStyle = `rgba(0,242,255,${alpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  /* ════════════════════════════════
+     7. RADAR CANVAS
+  ════════════════════════════════ */
+  (function initRadar() {
+    const canvas = document.getElementById('radar-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2, R = Math.min(W,H)/2 - 10;
+    let angle = 0;
+    const blips = Array.from({ length: 6 }, () => ({
+      r: Math.random() * R * 0.85 + 10,
+      a: Math.random() * Math.PI * 2,
+      age: Math.random() * 60,
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      // Rings
+      for (let i = 1; i <= 4; i++) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, R * (i/4), 0, Math.PI*2);
+        ctx.strokeStyle = 'rgba(0,242,255,0.09)';
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+      }
+      // Cross
+      ctx.strokeStyle = 'rgba(0,242,255,0.07)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(cx, cy-R); ctx.lineTo(cx, cy+R); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx-R, cy); ctx.lineTo(cx+R, cy); ctx.stroke();
+
+      // Sweep gradient
+      const grad = ctx.createConicalGradient ? null : null;
+      const sweepAngle = angle;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(sweepAngle);
+      const sg = ctx.createLinearGradient(0, 0, R, 0);
+      sg.addColorStop(0, 'rgba(0,242,255,0.28)');
+      sg.addColorStop(1, 'rgba(0,242,255,0)');
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, R, -0.4, 0.4);
+      ctx.fillStyle = sg;
+      ctx.fill();
+      ctx.restore();
+
+      // Sweep line
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + R * Math.cos(angle), cy + R * Math.sin(angle));
+      ctx.strokeStyle = 'rgba(0,242,255,0.55)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Blips
+      blips.forEach(b => {
+        b.age++;
+        const diff = ((angle - b.a) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+        if (diff < 0.15) b.age = 0;
+        const alpha = Math.max(0, 1 - b.age / 55);
+        if (alpha > 0.02) {
+          const bx = cx + b.r * Math.cos(b.a);
+          const by = cy + b.r * Math.sin(b.a);
+          ctx.beginPath();
+          ctx.arc(bx, by, 3, 0, Math.PI*2);
+          ctx.fillStyle = `rgba(0,242,255,${alpha * 0.9})`;
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = 'rgba(0,242,255,0.7)';
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      });
+
+      angle += 0.018;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  /* ════════════════════════════════
+     8. NEURAL CANVAS
+  ════════════════════════════════ */
+  (function initNeural() {
+    const canvas = document.getElementById('neural-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.offsetWidth || 200, H = 75;
+    canvas.width = W;
+
+    const layers = [
+      { nodes: 3, x: W * 0.12 },
+      { nodes: 4, x: W * 0.38 },
+      { nodes: 4, x: W * 0.62 },
+      { nodes: 2, x: W * 0.88 },
+    ];
+    const activations = layers.map(l => Array(l.nodes).fill(false));
+
+    function nodeY(n, i) { return H/2 + (i - (n-1)/2) * (H / (n + 1)); }
+
+    function pulse() {
+      const li = Math.floor(Math.random() * layers.length);
+      const ni = Math.floor(Math.random() * layers[li].nodes);
+      activations[li][ni] = true;
+      setTimeout(() => { activations[li][ni] = false; }, 320);
+    }
+    setInterval(pulse, 280);
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      for (let li = 0; li < layers.length - 1; li++) {
+        const l1 = layers[li], l2 = layers[li+1];
+        for (let ni = 0; ni < l1.nodes; ni++) {
+          for (let nj = 0; nj < l2.nodes; nj++) {
+            const active = activations[li][ni] && activations[li+1][nj];
+            ctx.beginPath();
+            ctx.moveTo(l1.x, nodeY(l1.nodes, ni));
+            ctx.lineTo(l2.x, nodeY(l2.nodes, nj));
+            ctx.strokeStyle = active ? 'rgba(0,242,255,0.32)' : 'rgba(0,242,255,0.06)';
+            ctx.lineWidth = active ? 1 : 0.6;
+            ctx.stroke();
+          }
+        }
+      }
+      layers.forEach((layer, li) => {
+        for (let ni = 0; ni < layer.nodes; ni++) {
+          const act = activations[li][ni];
+          ctx.beginPath();
+          ctx.arc(layer.x, nodeY(layer.nodes, ni), act ? 4.5 : 3, 0, Math.PI*2);
+          ctx.fillStyle = act ? 'rgba(0,242,255,0.9)' : 'rgba(0,242,255,0.22)';
+          if (act) { ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(0,242,255,0.7)'; }
+          else ctx.shadowBlur = 0;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  /* ════════════════════════════════
+     9. CALIBRATION TERMINAL (TYPING EFFECT)
+  ════════════════════════════════ */
+  (function initCalTerminal() {
+    const body = document.getElementById('cal-body');
+    const stateLine = document.getElementById('cal-state-line');
+    const stateText = document.getElementById('cal-state-txt');
+    if (!body || !stateLine) return;
+
+    const lines = [
+      { text: 'Loading eBPF hooks via Falco...', status: 'OK',      statusClass: 'cl-status-ok' },
+      { text: 'Establishing NATS event pipeline...', status: 'OK',  statusClass: 'cl-status-ok' },
+      { text: 'Injecting Rego policies into OPA brain...', status: 'OK', statusClass: 'cl-status-ok' },
+      { text: 'Activating Go Response Orchestrator...', status: 'STANDBY', statusClass: 'cl-status-sb' },
+    ];
+    const finalState = 'SYSTEM STATE: AWAITING FINAL DEPLOYMENT.';
+
+    let lineIdx = 0;
+    let charIdx = 0;
+    let currentEl = null;
+    let cursorEl = null;
+    let phase = 'typing'; // typing | pause | next
+
+    function createLine() {
+      if (lineIdx >= lines.length) {
+        // Show final state
+        if (cursorEl) cursorEl.remove();
+        if (stateLine) {
+          stateLine.style.display = 'flex';
+          stateLine.style.opacity = '0';
+          setTimeout(() => {
+            stateLine.style.transition = 'opacity 0.5s';
+            stateLine.style.opacity = '1';
+          }, 200);
+          // Type the final state
+          if (stateText) {
+            stateText.textContent = '';
+            let i = 0;
+            const typeState = setInterval(() => {
+              stateText.textContent += finalState[i++];
+              if (i >= finalState.length) clearInterval(typeState);
+            }, 38);
+          }
+        }
+        return;
+      }
+
+      const line = lines[lineIdx];
+      const div = document.createElement('div');
+      div.className = 'cal-line';
+
+      const prompt = document.createElement('span');
+      prompt.className = 'cl-prompt';
+      prompt.textContent = '>';
+
+      const textSpan = document.createElement('span');
+      textSpan.className = 'cl-text';
+
+      cursorEl = document.createElement('span');
+      cursorEl.className = 'cal-cursor';
+
+      div.appendChild(prompt);
+      div.appendChild(textSpan);
+      div.appendChild(cursorEl);
+
+      // Insert before the state line
+      body.insertBefore(div, stateLine);
+
+      requestAnimationFrame(() => div.classList.add('visible'));
+
+      currentEl = textSpan;
+      charIdx = 0;
+
+      function typeChar() {
+        if (!line || !currentEl) return;
+        if (charIdx < line.text.length) {
+          currentEl.textContent += line.text[charIdx];
+          charIdx++;
+          setTimeout(typeChar, 28 + Math.random() * 22);
+        } else {
+          // Add status badge
+          setTimeout(() => {
+            if (cursorEl) cursorEl.remove();
+            const statusSpan = document.createElement('span');
+            statusSpan.className = line.statusClass;
+            statusSpan.textContent = ' [' + line.status + ']';
+            div.appendChild(statusSpan);
+
+            lineIdx++;
+            setTimeout(createLine, 600 + Math.random() * 400);
+          }, 200);
+        }
+      }
+
+      setTimeout(typeChar, 200);
+    }
+
+    // Trigger when section is visible
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          createLine();
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+
+    const section = document.getElementById('calibration');
+    if (section) observer.observe(section);
+  })();
+
+  /* ════════════════════════════════
+     10. MODAL
+  ════════════════════════════════ */
+  (function initModal() {
+    const overlay = document.getElementById('modal-overlay');
+    const closeBtn = document.getElementById('modal-close-btn');
+    const dashBtn  = document.getElementById('dashboard-btn');
+
+    function openModal() {
+      if (overlay) overlay.classList.add('open');
+    }
+    function closeModal() {
+      if (overlay) overlay.classList.remove('open');
+    }
+
+    if (dashBtn)  dashBtn.addEventListener('click', openModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (overlay) {
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) closeModal();
+      });
+    }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  })();
+
+  /* ════════════════════════════════
+     11. MODULE CARD 3D TILT
+  ════════════════════════════════ */
+  (function initTilt() {
+    const cards = document.querySelectorAll('.mod-card, .bc');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r  = card.getBoundingClientRect();
+        const x  = e.clientX - r.left, y = e.clientY - r.top;
+        const rx = (y - r.height/2) / r.height * -6;
+        const ry = (x - r.width/2)  / r.width  *  6;
+        card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(6px)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(900px) rotateX(0) rotateY(0) translateZ(0)';
+        card.style.transition = 'transform 0.55s cubic-bezier(0.34,1.56,0.64,1), border-color 0.4s, background 0.4s';
+      });
+      card.addEventListener('mouseenter', () => {
+        card.style.transition = 'transform 0.18s ease';
+      });
+    });
+  })();
+
+  /* ════════════════════════════════
+     12. MAGNETIC BUTTONS
+  ════════════════════════════════ */
+  (function initMagnetic() {
+    if (!window.gsap) return;
+    document.querySelectorAll('.mag-wrap').forEach(wrap => {
+      const btn = wrap.querySelector('.btn');
+      if (!btn) return;
+      wrap.addEventListener('mousemove', e => {
+        const r = wrap.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top  - r.height/2;
+        gsap.to(btn, { x: x*0.26, y: y*0.26, duration: 0.3, ease: 'power2.out' });
+      });
+      wrap.addEventListener('mouseleave', () => {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.55, ease: 'elastic.out(1, 0.5)' });
+      });
+    });
+  })();
+
+  /* ════════════════════════════════
+     13. GSAP SCROLL ANIMATIONS
+  ════════════════════════════════ */
+  (function initGSAP() {
+    if (!window.gsap || !window.ScrollTrigger) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.utils.toArray('.rup').forEach((el, i) => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 44 },
+        {
+          opacity: 1, y: 0, duration: 1,
+          delay: (i % 3) * 0.05,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
+        }
+      );
+    });
+
+    gsap.utils.toArray('.rleft').forEach(el => {
+      gsap.fromTo(el,
+        { opacity: 0, x: -28 },
+        { opacity: 1, x: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 90%' } }
+      );
+    });
+
+    // Bento stagger
+    ScrollTrigger.create({
+      trigger: '.bento-grid',
+      start: 'top 80%',
+      onEnter: () => {
+        gsap.to('.bc', { opacity: 1, y: 0, stagger: 0.07, duration: 0.85, ease: 'power3.out' });
+      },
+    });
+
+    // Module cards stagger
+    ScrollTrigger.create({
+      trigger: '.mod-grid',
+      start: 'top 80%',
+      onEnter: () => {
+        gsap.to('.mod-card', { opacity: 1, y: 0, stagger: 0.12, duration: 0.9, ease: 'power3.out' });
+      },
+    });
+
+    // Manifesto words
+    ScrollTrigger.create({
+      trigger: '#mani-body',
+      start: 'top 82%',
+      onEnter: () => {
+        document.querySelectorAll('.mw').forEach((w, i) => {
+          setTimeout(() => w.classList.add('vis'), i * 40);
+        });
+      },
+    });
+
+    // Terminal log lines
+    ScrollTrigger.create({
+      trigger: '#log-wrap',
+      start: 'top 80%',
+      onEnter: () => {
+        document.querySelectorAll('.log-ln').forEach(ln => {
+          const d = parseInt(ln.getAttribute('data-delay') || '0');
+          setTimeout(() => ln.classList.add('on'), d);
+        });
+      },
+    });
+
+    // Status bars
+    ScrollTrigger.create({
+      trigger: '.status-panel',
+      start: 'top 78%',
+      onEnter: () => {
+        document.querySelectorAll('.sp-bar-fill').forEach(fill => {
+          fill.style.width = (fill.getAttribute('data-w') || '0') + '%';
+        });
+      },
+    });
+
+    gsap.to('.mani-deco', {
+      y: -90, ease: 'none',
+      scrollTrigger: { trigger: '#manifesto', start: 'top bottom', end: 'bottom top', scrub: 1.4 },
+    });
+  })();
+
+  /* ════════════════════════════════
+     14. MANIFESTO WORDS
+  
+
+  /* ════════════════════════════════
+     15. LIVE TERMINAL FEED
+  ════════════════════════════════ */
+  (function initLiveTerminal() {
+    const wrap = document.getElementById('log-wrap');
+    const liveLn = document.getElementById('live-cursor');
+    if (!wrap || !liveLn) return;
+
+    const liveLines = [
+      { type: 'ok',   text: '✓ Falco rule scan complete — 0 anomalies in current snapshot' },
+      { type: 'warn', text: '⚠ Elevated syscall frequency on PID 8814 — OPA policy triggered' },
+      { type: 'ok',   text: '✓ NATS event pipeline nominal — 312 events/sec processed' },
+      { type: 'inf',  text: '» Go Orchestrator heartbeat confirmed — all layers nominal' },
+      { type: 'ok',   text: '✓ Rego policy evaluation passed — containment cleared' },
+      { type: 'warn', text: '⚠ Lateral movement attempt detected — containment sealed' },
+      { type: 'ok',   text: '✓ Threat vector eliminated — PostgreSQL forensic state updated' },
+      { type: 'inf',  text: '» Sentinel heartbeat confirmed — AWAITING FINAL DEPLOYMENT' },
+    ];
+    let lineIdx = 0, ts = 14;
+
+    function addLine() {
+      if (!document.querySelector('.log-ln.on')) return;
+      ts += Math.floor(Math.random() * 8) + 4;
+      const item = liveLines[lineIdx % liveLines.length];
+      lineIdx++;
+      const ln = document.createElement('div');
+      ln.className = 'log-ln';
+      const pad = n => String(n).padStart(2,'0');
+      const time = `[00:${pad(Math.floor(ts/60))}:${pad(ts%60)}]`;
+      ln.innerHTML = `<span class="l-ts">${time}</span><span class="l-${item.type}">${item.text}</span>`;
+      wrap.insertBefore(ln, liveLn);
+      requestAnimationFrame(() => ln.classList.add('on'));
+      const all = wrap.querySelectorAll('.log-ln:not(#live-cursor)');
+      if (all.length > 14) all[0].remove();
+    }
+
+    setInterval(addLine, 3200 + Math.random()*1200);
+  })();
+
+  /* ════════════════════════════════
+     16. ARCHITECTURE LAYER CYCLING
+  ════════════════════════════════ */
+  (function initArchCycle() {
+    const layers = [1,2,3].map(i => document.getElementById('arch-l' + i));
+    const neuInd = document.getElementById('neu-ind');
+    let idx = 0;
+    function cycle() {
+      layers.forEach(l => { if(l) l.classList.remove('arch-active'); });
+      const cur = layers[idx % layers.length];
+      if (cur) cur.classList.add('arch-active');
+      if (idx % layers.length === 2 && neuInd) {
+        neuInd.classList.add('show');
+        setTimeout(() => { if(neuInd) neuInd.classList.remove('show'); }, 2200);
+      }
+      idx++;
+    }
+    setInterval(cycle, 2800); cycle();
+  })();
+
+/* ════════════════════════════════
+   REQUEST DEMO HANDLER
+════════════════════════════════ */
+(function initDemoRequest() {
+  const demoBtn = document.getElementById('demo-btn');
+  
+  if (demoBtn) {
+    demoBtn.addEventListener('click', () => {
+      // تغيير نص الزر مؤقتاً لإعطاء إيحاء بالارسال
+      const originalText = demoBtn.textContent;
+      demoBtn.textContent = 'SENDING...';
+      demoBtn.style.opacity = '0.7';
+      demoBtn.disabled = true;
+
+      setTimeout(() => {
+        // إنشاء عنصر الرسالة
+        const msg = document.createElement('div');
+        msg.style.cssText = `
+          position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+          background: rgba(0, 8, 18, 0.95); border: 1px solid var(--c);
+          color: var(--c); font-family: 'Noto Kufi Arabic', sans-serif;
+          padding: 1.2rem 2.5rem; z-index: 10000; direction: rtl;
+          box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+          backdrop-filter: blur(10px); text-align: center;
+          opacity: 0; transition: opacity 0.5s, bottom 0.5s;
+        `;
+        msg.innerHTML = `
+          <div style="font-weight: bold; margin-bottom: 5px;">تم إرسال الطلب بنجاح</div>
+          <div style="font-size: 0.75rem; opacity: 0.8;">سيتواصل فريق مرصاد معك قريباً لتحديد موعد الإصدار.</div>
+        `;
+
+        document.body.appendChild(msg);
+
+        // إظهار الرسالة بحركة ناعمة
+        requestAnimationFrame(() => {
+          msg.style.opacity = '1';
+          msg.style.bottom = '100px';
+        });
+
+        // إعادة الزر لوضعه الطبيعي
+        demoBtn.textContent = originalText;
+        demoBtn.style.opacity = '1';
+        demoBtn.disabled = false;
+
+        // إخفاء الرسالة بعد 4 ثوانٍ
+        setTimeout(() => {
+          msg.style.opacity = '0';
+          msg.style.bottom = '80px';
+          setTimeout(() => msg.remove(), 500);
+        }, 4000);
+      }, 800); // محاكاة وقت الإرسال
+    });
+  }
+})();
+
+window.onbeforeunload = function () { window.scrollTo(0, 0); };
+if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+  </script>
+</body>
+</html>

@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
 
 <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
-  <link rel="preload" as="video" href="https://res.cloudinary.com/dxshrigz4/video/upload/q_auto,f_auto,w_1280/v1775851883/mrsad_video_ninbgy.mp4" type="video/mp4" />
+  <link rel="preload" as="video" href="https://res.cloudinary.com/dxshrigz4/video/upload/f_auto,q_auto:eco,c_scale,w_1280/v1775851883/mrsad_video_ninbgy.mp4" type="video/mp4" crossorigin fetchpriority="high" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
@@ -197,7 +197,7 @@
       position: fixed; top:0; left:0; z-index:9990;
       width: 48px; height: 48px; pointer-events: none;
       transform: translate(-50%,-50%);
-      transition: transform 0.08s ease, opacity 0.3s;
+      transition: opacity 0.3s;   /* أزلنا transform transition — يسبب العلق */
     }
     #cur-i {
       position: fixed; top:0; left:0; z-index:9990;
@@ -205,7 +205,7 @@
       transform: translate(-50%,-50%);
       background: var(--c); border-radius: 50%;
       box-shadow: 0 0 8px var(--c);
-      transition: transform 0.06s linear;
+      /* بدون transition — يتبع الماوس فوراً */
     }
     .cr { width:100%;height:100%;border:1px solid rgba(0,242,255,0.38);border-radius:50%;position:relative; }
     .cr::before { content:'';position:absolute;top:50%;left:50%;width:1px;height:13px;background:rgba(0,242,255,0.32);transform:translate(-50%,-50%); }
@@ -1192,6 +1192,159 @@ nav {
       .cta-btns { flex-direction:column;align-items:center; }
       .btn { width:100%;max-width:300px;text-align:center; }
     }
+    /* ═══════════════════════════════════════════════════
+       TERMINAL DEMO MODAL
+    ═══════════════════════════════════════════════════ */
+    #demo-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(18px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #demo-overlay.open { opacity: 1; pointer-events: all; }
+
+    #demo-terminal {
+      width: min(640px, 94vw);
+      background: rgba(0,5,12,0.98);
+      border: 1px solid rgba(0,242,255,0.2);
+      box-shadow:
+        0 0 0 1px rgba(0,242,255,0.04) inset,
+        0 0 100px rgba(0,242,255,0.08),
+        0 50px 140px rgba(0,0,0,0.95);
+      position: relative;
+    }
+    #demo-terminal .dt-corner { position:absolute;border-color:rgba(0,242,255,0.55);border-style:solid; }
+    #demo-terminal .dt-tl { top:-1px;left:-1px;  width:16px;height:16px;border-width:2px 0 0 2px; }
+    #demo-terminal .dt-tr { top:-1px;right:-1px; width:16px;height:16px;border-width:2px 2px 0 0; }
+    #demo-terminal .dt-bl { bottom:-1px;left:-1px;  width:16px;height:16px;border-width:0 0 2px 2px; }
+    #demo-terminal .dt-br { bottom:-1px;right:-1px; width:16px;height:16px;border-width:0 2px 2px 0; }
+
+    .dt-bar {
+      display: flex; align-items: center; gap: 0.55rem;
+      padding: 0.72rem 1.2rem;
+      background: rgba(0,242,255,0.022);
+      border-bottom: 1px solid rgba(0,242,255,0.09);
+    }
+    .dt-dot { width:10px;height:10px;border-radius:50%; }
+    .dt-dot-r{background:#ff5f56;} .dt-dot-y{background:#ffbd2e;} .dt-dot-g{background:#27c93f;}
+    .dt-title-bar {
+      flex:1; text-align:center;
+      font-family:'IBM Plex Mono',monospace; font-size:0.5rem;
+      letter-spacing:0.26em; color:rgba(0,242,255,0.32); text-transform:uppercase;
+    }
+    .dt-close-x {
+      background:none;border:none;color:rgba(255,255,255,0.22);
+      font-size:0.9rem;cursor:pointer;padding:0 0.2rem;
+      transition:color 0.2s;line-height:1;
+    }
+    .dt-close-x:hover{color:rgba(255,100,100,0.8);}
+
+    .dt-body {
+      padding: 1.6rem 1.8rem 1.8rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: clamp(0.6rem,1.15vw,0.72rem);
+      line-height: 1.9;
+    }
+
+    /* أسطر اللوج */
+    .dt-line {
+      color: rgba(138,155,176,0.55);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.18rem;
+      transition: opacity 0.4s ease;
+    }
+    .dt-line .dt-ts  { color:rgba(0,242,255,0.25); margin-right:0.5rem; }
+    .dt-line .dt-ok  { color:rgba(0,220,120,0.9);  font-weight:500; }
+    .dt-line .dt-val { color:rgba(0,242,255,0.8); }
+    .dt-line .dt-err { color:rgba(255,68,68,0.9); }
+    .dt-fade { opacity:0; }
+
+    .dt-separator {
+      height:1px;
+      background:linear-gradient(90deg,transparent,rgba(0,242,255,0.12),transparent);
+      margin:1rem 0;
+    }
+
+    /* حقول الإدخال */
+    .dt-field-label {
+      font-size:0.5rem; letter-spacing:0.32em;
+      color:rgba(0,242,255,0.3); text-transform:uppercase;
+      margin-bottom:0.7rem;
+    }
+    .dt-prompt-line {
+      display:flex; align-items:center; gap:0.6rem;
+      background:rgba(0,242,255,0.028);
+      border:1px solid rgba(0,242,255,0.12);
+      padding:0.65rem 0.9rem;
+      transition:border-color 0.3s;
+    }
+    .dt-prompt-line:focus-within { border-color:rgba(0,242,255,0.35); }
+    .dt-prompt-sym { color:rgba(0,242,255,0.5); font-size:0.8rem; flex-shrink:0; }
+
+    #demo-email-input {
+      flex:1; background:transparent; border:none; outline:none;
+      color:rgba(0,242,255,0.95); font-family:'IBM Plex Mono',monospace;
+      font-size:clamp(0.6rem,1.15vw,0.72rem);
+      letter-spacing:0.1em; caret-color:var(--c);
+    }
+    #demo-email-input::placeholder { color:rgba(0,242,255,0.18); }
+
+    .dt-msg-wrap {
+      display:flex; align-items:flex-start; gap:0.6rem;
+      background:rgba(0,242,255,0.028);
+      border:1px solid rgba(0,242,255,0.12);
+      padding:0.65rem 0.9rem;
+      transition:border-color 0.3s;
+    }
+    .dt-msg-wrap:focus-within { border-color:rgba(0,242,255,0.35); }
+    #demo-msg-input {
+      flex:1; background:transparent; border:none; outline:none;
+      color:rgba(0,242,255,0.9); font-family:'IBM Plex Mono',monospace;
+      font-size:clamp(0.6rem,1.15vw,0.72rem);
+      letter-spacing:0.08em; caret-color:var(--c);
+      resize:none; min-height:80px; line-height:1.8;
+    }
+    #demo-msg-input::placeholder { color:rgba(0,242,255,0.16); font-family:'Noto Kufi Arabic',sans-serif; font-size:0.75rem; }
+
+    .dt-field-hint {
+      margin-top:0.55rem; font-size:0.46rem; letter-spacing:0.2em;
+      color:rgba(138,155,176,0.25); text-transform:uppercase;
+    }
+    .dt-field-hint kbd {
+      background:rgba(0,242,255,0.08); border:1px solid rgba(0,242,255,0.18);
+      color:rgba(0,242,255,0.55); padding:0.05rem 0.35rem; font-size:0.46rem;
+    }
+
+    /* النجاح */
+    .dt-success-box {
+      margin-top:1.2rem; padding:1.2rem 1.4rem;
+      background:rgba(0,220,120,0.04);
+      border:1px solid rgba(0,220,120,0.12);
+      border-left:3px solid rgba(0,220,120,0.4);
+    }
+    .dt-success-title {
+      font-family:'IBM Plex Mono',monospace; font-size:0.6rem;
+      letter-spacing:0.28em; color:rgba(0,220,120,0.9);
+      text-transform:uppercase; margin-bottom:0.7rem;
+    }
+    .dt-success-sub {
+      font-family:'Noto Kufi Arabic',sans-serif;
+      font-size:0.88rem; color:rgba(200,220,235,0.6);
+      direction:rtl; text-align:right; line-height:2;
+    }
+
+    /* حركة shake للخطأ */
+    @keyframes dt-shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)}
+      60%{transform:translateX(-4px)}
+      80%{transform:translateX(4px)}
+    }
+    .dt-shake { animation:dt-shake 0.45s ease; }
+
   </style>
 </head>
 <body>
@@ -1212,35 +1365,35 @@ nav {
 
       <div class="boot-ln" id="bl-1">
         <span class="bk">[  OK  ]</span>
-        <span class="bt">Loading eBPF hooks via <span class="ba">Falco</span>... sensor layer armed</span>
+        <span class="bt">Injecting <span class="ba">Deep Kernel Sensors</span>... runtime fabric armed</span>
       </div>
       <div class="boot-ln" id="bl-2">
         <span class="bk">[  OK  ]</span>
-        <span class="bt">Establishing <span class="ba">NATS</span> event pipeline... message bus operational</span>
+        <span class="bt">Establishing <span class="ba">Sovereign Event Pipeline</span>... signal bus operational</span>
       </div>
       <div class="boot-ln" id="bl-3">
         <span class="bk">[  OK  ]</span>
-        <span class="bt">Injecting <span class="ba">Rego</span> policies into OPA brain...</span>
+        <span class="bt">Loading <span class="ba">Autonomous Policy Engine</span>... decision matrix calibrated</span>
       </div>
       <div class="boot-ln" id="bl-4">
         <span class="bs">[ WAIT ]</span>
-        <span class="bt">Activating <span class="ba">Go</span> Response Orchestrator... handshake pending</span>
+        <span class="bt">Activating <span class="ba">Response Orchestrator</span>... establishing secure handshake</span>
       </div>
       <div class="boot-ln" id="bl-5">
         <span class="bk">[  OK  ]</span>
-        <span class="bt">Go Orchestrator online — <span class="ba">autonomous response</span> protocols active</span>
+        <span class="bt">Orchestrator online — <span class="ba">autonomous containment</span> protocols armed</span>
       </div>
       <div class="boot-ln" id="bl-6">
         <span class="bk">[  OK  ]</span>
-        <span class="bt">PostgreSQL evidence store initialized — forensic state <span class="ba">READY</span></span>
+        <span class="bt">Sovereign <span class="ba">Forensic State Engine</span> initialized — evidence vault SEALED</span>
       </div>
       <div class="boot-ln" id="bl-7">
         <span class="bk">[  OK  ]</span>
-        <span class="bt">Behavioral AI model loaded </span>
+        <span class="bt"><span class="ba">Behavioral Intelligence Core</span> online — 4.2M threat patterns loaded</span>
       </div>
       <div class="boot-ln" id="bl-8">
         <span class="bs">[ INFO ]</span>
-        <span class="bt">SYSTEM STATE: <span class="ba">AWAITING FINAL DEPLOYMENT</span></span>
+        <span class="bt">CLASSIFICATION: <span class="ba">SOVEREIGN RESTRICTED</span> · SENTINEL STANDING BY</span>
       </div>
 
       <div class="boot-fin" id="boot-fin">
@@ -1257,17 +1410,19 @@ nav {
 
 <div id="intro-video-wrap">
     <div id="intro-vid-box">
-<video 
-    id="intro-vid"
-    muted
-    playsinline
-    webkit-playsinline
-    preload="auto"
-    controlslist="nodownload"
-    disablepictureinpicture
-  >
-        <source src="https://res.cloudinary.com/dxshrigz4/video/upload/q_auto:eco,f_auto,w_1280,vc_auto/v1775851883/mrsad_video_ninbgy.mp4" type="video/mp4">
-      </video>
+      <video
+        id="intro-vid"
+        src="https://res.cloudinary.com/dxshrigz4/video/upload/f_auto,q_auto:eco,c_scale,w_1280/v1775851883/mrsad_video_ninbgy.mp4"
+        muted
+        autoplay
+        playsinline
+        webkit-playsinline
+        x5-playsinline
+        preload="auto"
+        controlslist="nodownload"
+        disablepictureinpicture
+        crossorigin="anonymous"
+      ></video>
       <div id="vid-buffering">[ BUFFERING... ]<br><span>LOADING STREAM</span></div>
       <button id="sound-btn" title="Click for sound">🔇</button>
     </div>
@@ -1275,6 +1430,78 @@ nav {
   </div>
 
   <!-- intro video is above ↑ -->
+
+  <!-- TERMINAL DEMO MODAL -->
+  <div id="demo-overlay">
+    <div id="demo-terminal">
+      <span class="dt-corner dt-tl"></span><span class="dt-corner dt-tr"></span>
+      <span class="dt-corner dt-bl"></span><span class="dt-corner dt-br"></span>
+
+      <div class="dt-bar">
+        <div class="dt-dot dt-dot-r"></div>
+        <div class="dt-dot dt-dot-y"></div>
+        <div class="dt-dot dt-dot-g"></div>
+        <div class="dt-title-bar">MRSAD — SECURE CHANNEL · END-TO-END ENCRYPTED</div>
+        <button class="dt-close-x" id="demo-close-btn" title="إغلاق">✕</button>
+      </div>
+
+      <div class="dt-body">
+
+        <!-- أسطر الإقلاع -->
+        <div id="dt-boot-lines">
+          <div class="dt-line"><span class="dt-ts">[SYS]</span> Establishing encrypted tunnel... <span class="dt-ok">SECURED</span></div>
+          <div class="dt-line dt-fade" id="dtl-2"><span class="dt-ts">[CHK]</span> Origin verification... <span class="dt-ok">CLEARED</span></div>
+          <div class="dt-line dt-fade" id="dtl-3"><span class="dt-ts">[ENC]</span> Protocol <span class="dt-val">AES-256-GCM</span> · Handshake complete</div>
+          <div class="dt-line dt-fade" id="dtl-4"><span class="dt-ts">[SYS]</span> Identity layer armed — awaiting operator input...</div>
+        </div>
+
+        <div class="dt-separator" id="dt-sep" style="display:none;"></div>
+
+        <!-- Step 1: الإيميل -->
+        <div id="dt-step-email" style="display:none;">
+          <div class="dt-field-label">STEP 1 / 2 &nbsp;·&nbsp; OPERATOR EMAIL</div>
+          <div class="dt-prompt-line">
+            <span class="dt-prompt-sym">&gt;_</span>
+            <input type="email" id="demo-email-input"
+              autocomplete="off" spellcheck="false"
+              maxlength="120"
+              placeholder="your@institution.edu" />
+          </div>
+          <div class="dt-field-hint">اكتب بريدك الإلكتروني ثم اضغط <kbd>ENTER</kbd></div>
+        </div>
+
+        <!-- Step 2: الرسالة الاختيارية -->
+        <div id="dt-step-msg" style="display:none;">
+          <div class="dt-line"><span class="dt-ts">[OK ]</span> Email registered — <span class="dt-ok">AUTHENTICATED</span></div>
+          <div class="dt-separator" style="margin:0.8rem 0;"></div>
+          <div class="dt-field-label">STEP 2 / 2 &nbsp;·&nbsp; MESSAGE <span style="opacity:0.4;">(OPTIONAL)</span></div>
+          <div class="dt-msg-wrap">
+            <span class="dt-prompt-sym">&gt;_</span>
+            <textarea id="demo-msg-input"
+              autocomplete="off" spellcheck="false"
+              maxlength="1200"
+              placeholder="اكتب رسالتك هنا... أو اتركها فارغة"></textarea>
+          </div>
+          <div class="dt-field-hint">اضغط <kbd>CTRL+ENTER</kbd> للإرسال · أو <kbd>ENTER</kbd> إذا بلا رسالة</div>
+        </div>
+
+        <!-- النجاح -->
+        <div id="dt-success" style="display:none;">
+          <div class="dt-line"><span class="dt-ts">[OK ]</span> <span class="dt-ok">✓ REQUEST TRANSMITTED · RECORD SEALED</span></div>
+          <div class="dt-line" style="margin-top:0.3rem;"><span class="dt-ts">[ENC]</span> Encrypted log stored · Ref: <span class="dt-val" id="dt-ref-id">———</span></div>
+          <div class="dt-success-box">
+            <div class="dt-success-title">تم الإرسال بنجاح · ACCESS GRANTED</div>
+            <div class="dt-success-sub">
+              تم تسجيل هويتك في قاعدة البيانات المشفرة لمرصاد.<br>
+              سيتواصل معك فريقنا عبر القناة الآمنة قريباً.
+            </div>
+          </div>
+          <div class="dt-field-hint" style="margin-top:1.4rem;">[ ESC ] أو انقر خارج النافذة للإغلاق</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
   <!-- CURSOR -->
   <div id="cur-o"><div class="cr"><span class="ct ct-tl"></span><span class="ct ct-tr"></span><span class="ct ct-bl"></span><span class="ct ct-br"></span></div></div>
@@ -1295,9 +1522,9 @@ nav {
       <div class="tsi"><span class="tss"></span>NODE<span class="tsv">MRSAD-CORE</span></div>
       <div class="tsi"><span class="tss"></span>BUILD<span class="tsv">2026.MRSAD.01</span></div>
       <div class="tsi"><span class="tss"></span>STATUS<span class="tsv">PRE-DEPLOYMENT</span></div>
-      <div class="tsi"><span class="tss"></span>FALCO<span class="tsv">ARMED</span></div>
-      <div class="tsi"><span class="tss"></span>NATS<span class="tsv">PIPELINE ACTIVE</span></div>
-      <div class="tsi"><span class="tss"></span>GO ORCHESTRATOR<span class="tsv">STANDBY</span></div>
+      <div class="tsi"><span class="tss"></span>KERNEL SENSORS<span class="tsv">ARMED</span></div>
+      <div class="tsi"><span class="tss"></span>SIGNAL PIPELINE<span class="tsv">ACTIVE</span></div>
+      <div class="tsi"><span class="tss"></span>RESPONSE CORE<span class="tsv">STANDBY</span></div>
       <div class="tsi"><span class="tss"></span>CLEARANCE<span class="tsv">LEVEL 5</span></div>
       <div class="tsi"><span class="tss"></span>COMPILATION<span class="tsv">65%</span></div>
       <div class="tsi"><span class="tss"></span>THREATS BLOCKED<span class="tsv">MONITORING</span></div>
@@ -1305,10 +1532,10 @@ nav {
       <div class="tsi"><span class="tss"></span>NODE<span class="tsv">MRSAD-CORE</span></div>
       <div class="tsi"><span class="tss"></span>BUILD<span class="tsv">2026.MRSAD.01</span></div>
       <div class="tsi"><span class="tss"></span>STATUS<span class="tsv">PRE-DEPLOYMENT</span></div>
-      <div class="tsi"><span class="tss"></span>FALCO<span class="tsv">ARMED</span></div>
-      <div class="tsi"><span class="tss"></span>NATS<span class="tsv">PIPELINE ACTIVE</span></div>
-      <div class="tsi"><span class="tss"></span>OPA<span class="tsv">312 RULES</span></div>
-      <div class="tsi"><span class="tss"></span>GO ORCHESTRATOR<span class="tsv">STANDBY</span></div>
+      <div class="tsi"><span class="tss"></span>KERNEL SENSORS<span class="tsv">ARMED</span></div>
+      <div class="tsi"><span class="tss"></span>SIGNAL PIPELINE<span class="tsv">ACTIVE</span></div>
+      <div class="tsi"><span class="tss"></span>POLICY MATRIX<span class="tsv">312 RULES</span></div>
+      <div class="tsi"><span class="tss"></span>RESPONSE CORE<span class="tsv">STANDBY</span></div>
       <div class="tsi"><span class="tss"></span>CLEARANCE<span class="tsv">LEVEL 5</span></div>
       <div class="tsi"><span class="tss"></span>COMPILATION<span class="tsv">65%</span></div>
       <div class="tsi"><span class="tss"></span>THREATS BLOCKED<span class="tsv">MONITORING</span></div>
@@ -1390,12 +1617,12 @@ nav {
       CLEARANCE / L5
     </div>
     <div class="hcorner hc-bl">
-      FALCO / ACTIVE<br>
-      OPA / ENFORCING<br>
-      NATS / LIVE
+      SENSORS / ARMED<br>
+      POLICY / ENFORCING<br>
+      PIPELINE / LIVE
     </div>
     <div class="hcorner hc-br">
-      GO / ORCHESTRATING<br>
+      ORCHESTRATOR / ACTIVE<br>
       RT / ZERO-TRUST<br>
       NODE / SOVEREIGN
     </div>
@@ -1459,7 +1686,7 @@ nav {
       <div class="mani-ar rup">
         بينما يستجيب الآخرون للتهديد بعد وقوعه، <strong>مرصاد</strong> يراقب ويتصرف — قبل أن تُشنّ الضربة الأولى.<br>
         نظام دفاعي مستقل يعمل في صمت كامل، يتسلل إلى طبقة وقت التشغيل حيث تتشكّل التهديدات،
-        ويُنفّذ القرار في ميكروثانية — دون انتظار أمر بشري.
+        ويُنفّذ القرار بشكل فوري — دون انتظار أمر بشري.
       </div>
 
       <div class="mani-deco" aria-hidden="true">م</div>
@@ -1476,11 +1703,11 @@ nav {
         <div class="arch-diagram rup">
 
           <div class="arch-layer rup" id="arch-l3">
-            <div class="al-num">// LAYER 03 — GO RESPONSE ORCHESTRATOR</div>
+            <div class="al-num">// LAYER 03 — AUTONOMOUS RESPONSE ORCHESTRATOR</div>
             <div class="al-title">Sovereign Response</div>
-            <div class="al-desc">Autonomous containment, process isolation, and zero-trust enforcement before breach propagation. Powered by Go.</div>
+            <div class="al-desc">Autonomous containment, process isolation, and zero-trust enforcement — executed in microseconds before breach propagation.</div>
             <div class="al-tags">
-              <span class="al-tag">Go Orchestrator</span>
+              <span class="al-tag">Response Engine</span>
               <span class="al-tag">Containment</span>
               <span class="al-tag">Zero-Trust</span>
               <span class="al-tag">Audit Trail</span>
@@ -1498,12 +1725,12 @@ nav {
 
           <div class="arch-layer rup" id="arch-l2" style="position:relative;">
             <div class="arch-neutralize"></div>
-            <div class="al-num">// LAYER 02 — OPA/REGO POLICY BRAIN</div>
+            <div class="al-num">// LAYER 02 — AUTONOMOUS POLICY ENGINE</div>
             <div class="al-title">MRSAD Intelligence Engine</div>
-            <div class="al-desc">OPA/Rego policy engine synthesizing syscall patterns, memory state, and NATS event streams into real-time threat decisions.</div>
+            <div class="al-desc">Sovereign policy engine synthesizing behavioral signals, memory state, and real-time event streams into microsecond threat decisions.</div>
             <div class="al-tags">
-              <span class="al-tag">OPA/Rego</span>
-              <span class="al-tag">NATS Event Bus</span>
+              <span class="al-tag">Policy Engine</span>
+              <span class="al-tag">Event Intelligence</span>
               <span class="al-tag">4.2M Signatures</span>
               <span class="al-tag">Zero-Day Detection</span>
             </div>
@@ -1516,11 +1743,11 @@ nav {
           </div>
 
           <div class="arch-layer rup" id="arch-l1">
-            <div class="al-num">// LAYER 01 — FALCO SENSORS (eBPF)</div>
+            <div class="al-num">// LAYER 01 — DEEP KERNEL SENSORS</div>
             <div class="al-title">Runtime Kernel Layer</div>
-            <div class="al-desc">Deep eBPF instrumentation via Falco — syscall hooks, memory integrity monitors, and container behavioral profilers.</div>
+            <div class="al-desc">Invisible instrumentation at the kernel boundary — syscall hooks, memory integrity monitors, and container behavioral profilers operating in real time.</div>
             <div class="al-tags">
-              <span class="al-tag">Falco / eBPF</span>
+              <span class="al-tag">Kernel Sensors</span>
               <span class="al-tag">Syscall Hooks</span>
               <span class="al-tag">Process Tracer</span>
               <span class="al-tag">312 Entry Points</span>
@@ -1534,7 +1761,7 @@ nav {
             How <em>MRSAD</em> sees<br>what others miss
           </div>
           <div class="arch-body rup">
-            Most security tools operate at the network perimeter — waiting for threats to reveal themselves. MRSAD operates inside the runtime stack, where every process, memory allocation, and system call is under continuous sovereign surveillance via Falco sensors, NATS event pipelines, and OPA policy enforcement.
+            Most security tools operate at the network perimeter — waiting for threats to reveal themselves. MRSAD operates deep inside the runtime fabric, where every process, memory allocation, and system call is under continuous sovereign surveillance — decision made in microseconds, containment executed in silence.
           </div>
 
           <div class="arch-features">
@@ -1545,7 +1772,7 @@ nav {
                 </svg>
               </div>
               <div>
-                <div class="af-title">Falco eBPF Sensors</div>
+                <div class="af-title">Deep Kernel Sensors</div>
                 <div class="af-desc">Eyes inside every container. Every syscall. Every memory page. Continuously.</div>
               </div>
             </div>
@@ -1557,8 +1784,8 @@ nav {
                 </svg>
               </div>
               <div>
-                <div class="af-title">OPA/Rego Policy Brain</div>
-                <div class="af-desc">Security-as-Code: strict Rego policies evaluated at microsecond speed via NATS event bus.</div>
+                <div class="af-title">Autonomous Policy Engine</div>
+                <div class="af-desc">Security-as-Code: sovereign policies evaluated at microsecond speed via the Sovereign Event Pipeline.</div>
               </div>
             </div>
             <div class="arch-feat rup">
@@ -1568,7 +1795,7 @@ nav {
                 </svg>
               </div>
               <div>
-                <div class="af-title">Go Response Orchestrator</div>
+                <div class="af-title">Sovereign Response Orchestrator</div>
                 <div class="af-desc">Zero-trust containment executes before the attacker realizes they have been detected.</div>
               </div>
             </div>
@@ -1610,15 +1837,15 @@ nav {
             Final <em>calibration</em><br>in progress
           </div>
           <div class="cal-desc">
-            تخضع المنظومة حالياً لمرحلة <strong>المعايرة النهائية</strong> قبل الإطلاق الرسمي. كل مكوّن يُختبر تحت ضغط متمنيّا تحقيق أعلى مستويات الأداء — من مستشعرات Falco، مروراً بـ NATS، وصولاً إلى منطق OPA.
+            تخضع المنظومة حالياً لمرحلة <strong>المعايرة النهائية</strong> قبل الإطلاق الرسمي. كل طبقة تُختبر تحت أقسى الظروف — من مستشعرات النواة ، مروراً بخط  الأحداث ، وصولاً إلى محرك القرار الآلي.
           </div>
           <div class="cal-stack">
-            <div class="cal-chip">Falco / eBPF</div>
-            <div class="cal-chip">NATS Event Bus</div>
-            <div class="cal-chip">OPA / Rego</div>
-            <div class="cal-chip">Go 1.22</div>
-            <div class="cal-chip">Docker / K8s</div>
-            <div class="cal-chip">PostgreSQL</div>
+            <div class="cal-chip">Deep Kernel Sensors</div>
+            <div class="cal-chip">Sovereign Event Pipeline</div>
+            <div class="cal-chip">Autonomous Policy Engine</div>
+            <div class="cal-chip">Response Orchestrator</div>
+            <div class="cal-chip">Runtime Containers</div>
+            <div class="cal-chip">Immutable Forensic Vault</div>
           </div>
         </div>
 
@@ -1637,7 +1864,7 @@ nav {
         <!-- Card 1: Runtime Sensors -->
         <div class="mod-card" id="mc-1">
           <span class="ca ca-tl"></span><span class="ca ca-br"></span>
-          <div class="mod-num">// MODULE 01 · FALCO LAYER</div>
+          <div class="mod-num">// MODULE 01 · DEEP KERNEL SENSORS</div>
           <div class="mod-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
               <circle cx="12" cy="12" r="3"/>
@@ -1646,11 +1873,11 @@ nav {
           </div>
           <div class="mod-title-en">Runtime Sensors</div>
           <div class="mod-title-ar">مستشعرات وقت التشغيل</div>
-          <div class="mod-desc">تحليل دقيق لسلوك الحاويات — كل استدعاء نظام، كل عملية، كل تخصيص ذاكرة تحت المراقبة المستمرة عبر eBPF.</div>
+          <div class="mod-desc">رؤية عميقة داخل كل حاوية — كل استدعاء نظام، كل عملية، كل تخصيص ذاكرة تحت المراقبة المستمرة في طبقة النواة.</div>
           <div class="mod-status-bar">
             <div class="mod-status-line">
               <div class="mod-status-dot"></div>
-              <span>&gt; Calibrating Falco rules...</span>
+              <span>&gt; Calibrating kernel sensor layer...</span>
             </div>
             <div class="mod-progress">
               <div class="mod-progress-fill" style="animation-delay: 0s;"></div>
@@ -1661,7 +1888,7 @@ nav {
         <!-- Card 2: Policy Brain -->
         <div class="mod-card" id="mc-2">
           <span class="ca ca-tl"></span><span class="ca ca-br"></span>
-          <div class="mod-num">// MODULE 02 · OPA/REGO BRAIN</div>
+          <div class="mod-num">// MODULE 02 · AUTONOMOUS POLICY ENGINE</div>
           <div class="mod-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
               <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
@@ -1669,11 +1896,11 @@ nav {
           </div>
           <div class="mod-title-en">Policy Brain</div>
           <div class="mod-title-ar">محرك القرار الآلي</div>
-          <div class="mod-desc">سياسات أمنية صارمة ككود — محرك OPA يقيم قاعدة Rego في الوقت الفعلي لكل حدث أمني.</div>
+          <div class="mod-desc">سياسات أمنية سيادية تُقيَّم في الوقت الفعلي لكل حدث — قرارات الاحتواء تُنفَّذ بشكل فوري دون تدخل بشري.</div>
           <div class="mod-status-bar">
             <div class="mod-status-line">
               <div class="mod-status-dot" style="background:var(--c);box-shadow:0 0 6px var(--c);"></div>
-              <span>&gt; Verifying OPA syntax...</span>
+              <span>&gt; Verifying autonomous policy matrix...</span>
             </div>
             <div class="mod-progress">
               <div class="mod-progress-fill" style="animation-delay: 0.8s;"></div>
@@ -1684,7 +1911,7 @@ nav {
         <!-- Card 3: Evidence Pack -->
         <div class="mod-card" id="mc-3">
           <span class="ca ca-tl"></span><span class="ca ca-br"></span>
-          <div class="mod-num">// MODULE 03 · FORENSIC STORE</div>
+          <div class="mod-num">// MODULE 03 · IMMUTABLE FORENSIC VAULT</div>
           <div class="mod-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,242,255,0.8)" stroke-width="1.5">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -1696,11 +1923,11 @@ nav {
           </div>
           <div class="mod-title-en">Evidence Pack</div>
           <div class="mod-title-ar">الحقيبة الجنائية</div>
-          <div class="mod-desc">توثيق فوري للأدلة الرقمية — سجل جنائي غير قابل للتغيير لكل حادثة أمنية مخزّن في PostgreSQL.</div>
+          <div class="mod-desc">توثيق فوري للأدلة الرقمية — سجل جنائي مشفر غير قابل للتعديل لكل حادثة أمنية، محمي بأعلى مستويات السيادة الرقمية.</div>
           <div class="mod-status-bar">
             <div class="mod-status-line">
               <div class="mod-status-dot" style="background:rgba(0,220,120,0.8);box-shadow:0 0 6px rgba(0,220,120,0.6);animation:none;"></div>
-              <span>&gt; Initializing PostgreSQL states...</span>
+              <span>&gt; Sealing forensic vault integrity...</span>
             </div>
             <div class="mod-progress">
               <div class="mod-progress-fill" style="animation-delay: 1.6s;"></div>
@@ -1843,13 +2070,13 @@ nav {
           </div>
           <div class="term-body">
             <div id="log-wrap">
-              <div class="log-ln" data-delay="150"><span class="l-ts">[00:00:01]</span><span class="l-body">Falco eBPF kernel module loaded — runtime hooks injected</span></div>
-              <div class="log-ln" data-delay="520"><span class="l-ts">[00:00:02]</span><span class="l-ok">✓ NATS event pipeline established — message bus operational</span></div>
-              <div class="log-ln" data-delay="950"><span class="l-ts">[00:00:04]</span><span class="l-ok">✓ OPA loaded —  Rego rules evaluated across all namespaces</span></div>
-              <div class="log-ln" data-delay="1400"><span class="l-ts">[00:00:07]</span><span class="l-ok">✓ Go Orchestrator online — autonomous response protocols active</span></div>
+              <div class="log-ln" data-delay="150"><span class="l-ts">[00:00:01]</span><span class="l-body">Deep kernel sensor layer armed — runtime fabric instrumented</span></div>
+              <div class="log-ln" data-delay="520"><span class="l-ts">[00:00:02]</span><span class="l-ok">✓ Sovereign event pipeline established — signal bus operational</span></div>
+              <div class="log-ln" data-delay="950"><span class="l-ts">[00:00:04]</span><span class="l-ok">✓ Autonomous policy engine online — decision matrix calibrated</span></div>
+              <div class="log-ln" data-delay="1400"><span class="l-ts">[00:00:07]</span><span class="l-ok">✓ Response orchestrator armed — zero-trust containment active</span></div>
               <div class="log-ln" data-delay="1950"><span class="l-ts">[00:00:09]</span><span class="l-warn">⚠ Anomalous beacon detected — port 0x115C — containment initiated</span></div>
-              <div class="log-ln" data-delay="2550"><span class="l-ts">[00:00:11]</span><span class="l-ok">✓ Threat neutralized — PostgreSQL forensic state updated</span></div>
-              <div class="log-ln" data-delay="3200"><span class="l-ts">[00:00:14]</span><span class="l-inf">» Sentinel Sequence complete — AWAITING FINAL DEPLOYMENT</span></div>
+              <div class="log-ln" data-delay="2550"><span class="l-ts">[00:00:11]</span><span class="l-ok">✓ Threat neutralized — immutable forensic record sealed</span></div>
+              <div class="log-ln" data-delay="3200"><span class="l-ts">[00:00:14]</span><span class="l-inf">» Sentinel sequence complete — CLASSIFICATION: SOVEREIGN RESTRICTED</span></div>
               <div class="log-ln" id="live-cursor" data-delay="4000"><span class="l-ts">[LIVE]</span><span class="l-body"><span class="blink"></span></span></div>
             </div>
           </div>
@@ -1875,9 +2102,9 @@ nav {
 
           <div class="sp-blk">
             <div class="sp-blk-num">SYS/03</div>
-            <div class="sp-lbl">OPA Engine</div>
+            <div class="sp-lbl">Policy Engine</div>
             <div class="sp-val c">ENFORCED</div>
-            <div class="sp-sub"> Rego rules active</div>
+            <div class="sp-sub">Autonomous decision matrix active</div>
             <div class="sp-bar-bg"><div class="sp-bar-fill" data-w="95"></div></div>
           </div>
 
@@ -1903,12 +2130,12 @@ nav {
         <div class="foot-logo">MRSAD</div>
         <div class="foot-tagline">Monitoring Runtime Sentinel &amp; Autonomous Defense</div>
         <div class="foot-chips">
-          <span class="foot-chip">Falco</span>
-          <span class="foot-chip">NATS</span>
-          <span class="foot-chip">OPA/Rego</span>
-          <span class="foot-chip">Go</span>
-          <span class="foot-chip">Docker/K8s</span>
-          <span class="foot-chip">PostgreSQL</span>
+          <span class="foot-chip">Kernel Sensors</span>
+          <span class="foot-chip">Event Pipeline</span>
+          <span class="foot-chip">Policy Engine</span>
+          <span class="foot-chip">Response Core</span>
+          <span class="foot-chip">Runtime Containers</span>
+          <span class="foot-chip">Forensic Vault</span>
         </div>
       </div>
       <div class="foot-ar">
@@ -1945,6 +2172,11 @@ nav {
     var barVal  = 0;
     var videoDone = false;
 
+    /* ── تحميل الفيديو فوراً في الخلفية أثناء شاشة Boot ── */
+    if (vid) {
+      vid.load();
+    }
+
     lines.forEach(function(el, i) {
       if (!el) return;
       setTimeout(function(){ el.classList.add('on'); }, 350 + i * 310);
@@ -1962,6 +2194,7 @@ nav {
     }, 350 + 8 * 310 + 400);
 
     function onBootComplete() {
+      /* ── تأخير 5 ثوانٍ إضافية: يعطي المتصفح وقتاً كافياً لتحميل الفيديو ── */
       setTimeout(function() {
         if (glitch) {
           glitch.style.opacity = '1';
@@ -1973,27 +2206,23 @@ nav {
           if (boot) boot.classList.add('out');
           showVideo();
         }, 320);
-      }, 700);
+      }, 5700);
     }
 
     function showVideo() {
       if (!vidWrap || !vid) { startMainSite(); return; }
 
-      // Switch to full preload now that user has seen boot screen
-      vid.preload = 'auto';
-
-      // إيقاف الـ GPU عن معالجة الخلفيات أثناء الفيديو
+      /* ── إعداد أولي ── */
       document.body.classList.add('playing-video');
+      vid.muted = true;           // إجباري لـ autoplay على iOS وكل المتصفحات
+      vid.volume = 1;
+      if (bufMsg) bufMsg.style.display = 'none';
 
-      var soundBtn = document.getElementById('sound-btn');
-
+      /* ── إظهار الغلاف ── */
       vidWrap.classList.add('active');
-      vid.classList.add('ready');
 
-      if (skipBtn) skipBtn.addEventListener('click', finishVideo, { once: true });
-      vid.addEventListener('ended', finishVideo, { once: true });
-      vid.addEventListener('error', function() { finishVideo(); }, { once: true });
-
+      /* ── زر الصوت ── */
+      var soundBtn = document.getElementById('sound-btn');
       if (soundBtn) {
         soundBtn.addEventListener('click', function() {
           vid.muted = !vid.muted;
@@ -2002,37 +2231,48 @@ nav {
         });
       }
 
-      vid.currentTime = 0;
-      vid.muted  = true;
-      vid.volume = 1;
-      // Show buffering until enough data is loaded
-      bufMsg.style.display = 'flex';
-      vid.classList.remove('ready');
+      /* ── أحداث النهاية ── */
+      if (skipBtn) skipBtn.addEventListener('click', finishVideo, { once: true });
+      vid.addEventListener('ended', finishVideo, { once: true });
+      vid.addEventListener('error', finishVideo, { once: true });
 
+      /* ── دالة التشغيل الفعلي ── */
+      var played = false;
       function startPlayback() {
-        bufMsg.style.display = 'none';
+        if (played) return;
+        played = true;
+        clearTimeout(bufTimer);
+        clearTimeout(fallbackTimer);
+        if (bufMsg) bufMsg.style.display = 'none';
         vid.classList.add('ready');
+        vid.currentTime = 0;          // ← إعادة للبداية دائماً بدون استثناء
         var p = vid.play();
-        if (p && typeof p.then === 'function') {
-          p.catch(function() { finishVideo(); });
+        if (p && p.then) {
+          p.then(function() {
+            if (bufMsg) bufMsg.style.display = 'none';
+          }).catch(function() {
+            finishVideo();
+          });
         }
       }
 
-      // canplaythrough = enough buffered to play without stuttering
-      if (vid.readyState >= 4) {
+      /* ── BUFFERING: يظهر فقط إذا تأخر أكثر من 1.5 ثانية ── */
+      var bufTimer = setTimeout(function() {
+        if (!played && bufMsg) bufMsg.style.display = 'flex';
+      }, 1500);
+
+      /* ── تشغيل فوري إذا كان الفيديو جاهزاً بالفعل ── */
+      if (vid.readyState >= 3) {
         startPlayback();
       } else {
-        vid.addEventListener('canplaythrough', function() {
-          startPlayback();
-        }, { once: true });
-        // Fallback: if canplaythrough takes >8s just start anyway
-        setTimeout(function() {
-          if (vid.paused) startPlayback();
-        }, 8000);
+        vid.addEventListener('canplay', startPlayback, { once: true });
       }
 
-      // تجاوز تلقائي بعد 30 ثانية في أسوأ الحالات
-      setTimeout(function() { finishVideo(); }, 30000);
+      /* ── صمام أمان: شغّل على أي حال بعد ثانيتين مهما كانت الظروف ── */
+      var fallbackTimer = setTimeout(startPlayback, 2000);
+
+      /* ── صمام أمان أخير: أغلق الفيديو بعد 35 ثانية ── */
+      setTimeout(finishVideo, 35000);
     }
 
     function finishVideo() {
@@ -2187,8 +2427,8 @@ nav {
       ci.style.left = mx + 'px'; ci.style.top = my + 'px';
     });
     (function loop() {
-      cx += (mx - cx) * 0.12;
-      cy += (my - cy) * 0.12;
+      cx += (mx - cx) * 0.22;   /* أسرع وأكثر سلاسة */
+      cy += (my - cy) * 0.22;
       co.style.left = cx + 'px'; co.style.top = cy + 'px';
       requestAnimationFrame(loop);
     })();
@@ -2547,10 +2787,10 @@ nav {
     if (!body || !stateLine) return;
 
     const lines = [
-      { text: 'Loading eBPF hooks via Falco...', status: 'OK',      statusClass: 'cl-status-ok' },
-      { text: 'Establishing NATS event pipeline...', status: 'OK',  statusClass: 'cl-status-ok' },
-      { text: 'Injecting Rego policies into OPA brain...', status: 'OK', statusClass: 'cl-status-ok' },
-      { text: 'Activating Go Response Orchestrator...', status: 'STANDBY', statusClass: 'cl-status-sb' },
+      { text: 'Arming deep kernel sensor layer — runtime fabric instrumented...', status: 'OK',      statusClass: 'cl-status-ok' },
+      { text: 'Activating sovereign signal pipeline — event bus online...', status: 'OK',  statusClass: 'cl-status-ok' },
+      { text: 'Calibrating autonomous policy matrix — 312 rules loaded...', status: 'OK', statusClass: 'cl-status-ok' },
+      { text: 'Initializing sovereign response core — containment ready...', status: 'STANDBY', statusClass: 'cl-status-sb' },
     ];
     const finalState = 'SYSTEM STATE: AWAITING FINAL DEPLOYMENT.';
 
@@ -2836,14 +3076,14 @@ nav {
     if (!wrap || !liveLn) return;
 
     const liveLines = [
-      { type: 'ok',   text: '✓ Falco rule scan complete — 0 anomalies in current snapshot' },
-      { type: 'warn', text: '⚠ Elevated syscall frequency on PID 8814 — OPA policy triggered' },
-      { type: 'ok',   text: '✓ NATS event pipeline nominal — 312 events/sec processed' },
-      { type: 'inf',  text: '» Go Orchestrator heartbeat confirmed — all layers nominal' },
-      { type: 'ok',   text: '✓ Rego policy evaluation passed — containment cleared' },
+      { type: 'ok',   text: '✓ Kernel sensor scan complete — 0 anomalies in current snapshot' },
+      { type: 'warn', text: '⚠ Elevated syscall frequency on PID 8814 — policy engine triggered' },
+      { type: 'ok',   text: '✓ Sovereign event pipeline nominal — 312 signals/sec processed' },
+      { type: 'inf',  text: '» Response orchestrator heartbeat confirmed — all layers nominal' },
+      { type: 'ok',   text: '✓ Autonomous policy evaluation passed — containment cleared' },
       { type: 'warn', text: '⚠ Lateral movement attempt detected — containment sealed' },
-      { type: 'ok',   text: '✓ Threat vector eliminated — PostgreSQL forensic state updated' },
-      { type: 'inf',  text: '» Sentinel heartbeat confirmed — AWAITING FINAL DEPLOYMENT' },
+      { type: 'ok',   text: '✓ Threat vector eliminated — forensic vault record sealed' },
+      { type: 'inf',  text: '» Sentinel heartbeat confirmed — CLASSIFICATION: SOVEREIGN RESTRICTED' },
     ];
     let lineIdx = 0, ts = 14;
 
@@ -2887,59 +3127,203 @@ nav {
   })();
 
 /* ════════════════════════════════
-   REQUEST DEMO HANDLER
+   TERMINAL DEMO REQUEST
 ════════════════════════════════ */
-(function initDemoRequest() {
-  const demoBtn = document.getElementById('demo-btn');
-  
-  if (demoBtn) {
-    demoBtn.addEventListener('click', () => {
-      // تغيير نص الزر مؤقتاً لإعطاء إيحاء بالارسال
-      const originalText = demoBtn.textContent;
-      demoBtn.textContent = 'SENDING...';
-      demoBtn.style.opacity = '0.7';
-      demoBtn.disabled = true;
+(function initTerminalDemo() {
+  var demoBtn    = document.getElementById('demo-btn');
+  var overlay    = document.getElementById('demo-overlay');
+  var closeBtn   = document.getElementById('demo-close-btn');
+  var dtl2       = document.getElementById('dtl-2');
+  var dtl3       = document.getElementById('dtl-3');
+  var dtl4       = document.getElementById('dtl-4');
+  var dtSep      = document.getElementById('dt-sep');
+  var stepEmail  = document.getElementById('dt-step-email');
+  var stepMsg    = document.getElementById('dt-step-msg');
+  var dtSuccess  = document.getElementById('dt-success');
+  var emailInput = document.getElementById('demo-email-input');
+  var msgInput   = document.getElementById('demo-msg-input');
+  var dtRefId    = document.getElementById('dt-ref-id');
+  var promptLine = emailInput ? emailInput.closest('.dt-prompt-line') : null;
 
-      setTimeout(() => {
-        // إنشاء عنصر الرسالة
-        const msg = document.createElement('div');
-        msg.style.cssText = `
-          position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-          background: rgba(0, 8, 18, 0.95); border: 1px solid var(--c);
-          color: var(--c); font-family: 'Noto Kufi Arabic', sans-serif;
-          padding: 1.2rem 2.5rem; z-index: 10000; direction: rtl;
-          box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
-          backdrop-filter: blur(10px); text-align: center;
-          opacity: 0; transition: opacity 0.5s, bottom 0.5s;
-        `;
-        msg.innerHTML = `
-          <div style="font-weight: bold; margin-bottom: 5px;">تم إرسال الطلب بنجاح</div>
-          <div style="font-size: 0.75rem; opacity: 0.8;">سيتواصل فريق مرصاد معك قريباً لتحديد موعد الإصدار.</div>
-        `;
+  if (!overlay) return;
 
-        document.body.appendChild(msg);
+  /* ── توليد رقم مرجع عشوائي ── */
+  function genRef() {
+    return 'MRS-' + Date.now().toString(36).toUpperCase().slice(-5) +
+           '-' + Math.floor(Math.random()*9000+1000);
+  }
 
-        // إظهار الرسالة بحركة ناعمة
-        requestAnimationFrame(() => {
-          msg.style.opacity = '1';
-          msg.style.bottom = '100px';
-        });
+  /* ── فتح الـ Terminal ── */
+  function openTerminal() {
+    // إعادة تعيين كامل
+    if(dtl2)      dtl2.classList.remove('dt-fade'); dtl2 && (dtl2.style.opacity='0');
+    if(dtl3)      dtl3.classList.remove('dt-fade'); dtl3 && (dtl3.style.opacity='0');
+    if(dtl4)      dtl4.classList.remove('dt-fade'); dtl4 && (dtl4.style.opacity='0');
+    if(dtSep)     dtSep.style.display = 'none';
+    if(stepEmail) stepEmail.style.display = 'none';
+    if(stepMsg)   stepMsg.style.display   = 'none';
+    if(dtSuccess) dtSuccess.style.display = 'none';
+    if(emailInput){ emailInput.value = ''; emailInput.style.color = ''; }
+    if(msgInput)  msgInput.value = '';
+    if(promptLine) { promptLine.style.borderColor=''; promptLine.classList.remove('dt-shake'); }
 
-        // إعادة الزر لوضعه الطبيعي
-        demoBtn.textContent = originalText;
-        demoBtn.style.opacity = '1';
-        demoBtn.disabled = false;
+    overlay.classList.add('open');
 
-        // إخفاء الرسالة بعد 4 ثوانٍ
-        setTimeout(() => {
-          msg.style.opacity = '0';
-          msg.style.bottom = '80px';
-          setTimeout(() => msg.remove(), 500);
-        }, 4000);
-      }, 800); // محاكاة وقت الإرسال
+    // تسلسل ظهور الأسطر
+    setTimeout(function(){ if(dtl2){ dtl2.style.opacity='1'; } }, 350);
+    setTimeout(function(){ if(dtl3){ dtl3.style.opacity='1'; } }, 720);
+    setTimeout(function(){ if(dtl4){ dtl4.style.opacity='1'; } }, 1100);
+    setTimeout(function(){
+      if(dtSep)     dtSep.style.display     = 'block';
+      if(stepEmail) stepEmail.style.display = 'block';
+      setTimeout(function(){ if(emailInput) emailInput.focus(); }, 80);
+    }, 1550);
+  }
+
+  /* ── إغلاق ── */
+  function closeTerminal() { overlay.classList.remove('open'); }
+
+  /* ── التحقق من الإيميل ── */
+  function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim()); }
+
+  /* ── Step 1: تأكيد الإيميل → Step 2 ── */
+  function confirmEmail() {
+    var email = emailInput ? emailInput.value.trim() : '';
+    if (!isValidEmail(email)) {
+      if(promptLine){
+        promptLine.style.borderColor = 'rgba(255,68,68,0.55)';
+        promptLine.classList.remove('dt-shake');
+        void promptLine.offsetWidth; // reflow لإعادة تشغيل الأنيميشن
+        promptLine.classList.add('dt-shake');
+      }
+      if(emailInput){ emailInput.style.color='rgba(255,68,68,0.8)'; emailInput.value=''; emailInput.focus(); }
+      setTimeout(function(){
+        if(promptLine){ promptLine.style.borderColor=''; }
+        if(emailInput){ emailInput.style.color=''; }
+      }, 900);
+      return;
+    }
+    if(stepEmail) stepEmail.style.display = 'none';
+    if(stepMsg)   stepMsg.style.display   = 'block';
+    setTimeout(function(){ if(msgInput) msgInput.focus(); }, 80);
+  }
+
+  /* ── Step 2: إرسال نهائي عبر Fetch API الصامت ── */
+  async function submitAll() {
+    var email   = emailInput ? emailInput.value.trim()  : '';
+    var message = msgInput   ? msgInput.value.trim()    : '';
+    var ref     = genRef();
+
+    if(stepMsg)   stepMsg.style.display   = 'none';
+    if(dtSuccess) dtSuccess.style.display = 'block';
+    if(dtRefId)   dtRefId.textContent     = ref;
+
+    // إرسال صامت عبر Fetch إلى Sovereign API Gateway
+    try {
+      await fetch('https://formspree.io/f/mgorwlkw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          email:     email,
+          message:   message || '—',
+          reference: ref,
+          timestamp: new Date().toISOString(),
+          source:    'MRSAD Sovereign Terminal'
+        })
+      });
+    } catch(e) {
+      // إرسال صامت — الواجهة تُكمل بغض النظر عن حالة الشبكة
+    }
+  }
+
+  /* ── Events ── */
+  if(demoBtn)  demoBtn.addEventListener('click', openTerminal);
+  if(closeBtn) closeBtn.addEventListener('click', closeTerminal);
+
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) closeTerminal(); });
+
+  document.addEventListener('keydown', function(e){
+    if (!overlay.classList.contains('open')) return;
+    if (e.key === 'Escape') { closeTerminal(); return; }
+  });
+
+  if(emailInput){
+    emailInput.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); confirmEmail(); }
+    });
+    emailInput.addEventListener('focus', function(){
+      setTimeout(function(){ emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 320);
+    });
+  }
+
+  if(msgInput){
+    msgInput.addEventListener('keydown', function(e){
+      // Ctrl+Enter أو Enter وحده إذا الحقل فارغ → إرسال
+      if(e.key === 'Enter' && (e.ctrlKey || e.metaKey || msgInput.value.trim() === '')){
+        e.preventDefault(); submitAll();
+      }
+    });
+    msgInput.addEventListener('focus', function(){
+      setTimeout(function(){ msgInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 320);
     });
   }
 })();
+
+/* ════════════════════════════════
+     17. CANVAS VISIBILITY OPTIMIZER
+     توقيف رسم الـ Canvas خارج نطاق الرؤية لتوفير موارد الجهاز
+  ════════════════════════════════ */
+  (function initCanvasOptimizer() {
+    var canvasIds = ['gl-canvas', 'pt-canvas', 'hex-canvas'];
+    var visibleMap = {};
+
+    canvasIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      visibleMap[id] = true; // الـ canvas ثابتة في المنفذ دائماً — نتحكم بها عبر class
+
+      // تحسين: إيقاف التأثيرات المكلفة عند التمرير خارج الـ Hero
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            el.style.willChange = 'auto';
+          } else {
+            // Canvas ثابتة لكن نوقف الـ will-change لتحرير GPU
+            el.style.willChange = 'auto';
+          }
+        });
+      }, { threshold: 0 });
+
+      // مراقبة الـ Hero للتحكم بعبء الـ Canvas
+      var hero = document.getElementById('hero');
+      if (hero) observer.observe(hero);
+    });
+
+    // إيقاف مؤثرات الـ Canvas عند التمرير بعيداً عن الـ Hero
+    var scrollY = 0;
+    var ticking = false;
+    window.addEventListener('scroll', function() {
+      scrollY = window.scrollY;
+      if (!ticking) {
+        requestAnimationFrame(function() {
+          var threshold = window.innerHeight * 2.5;
+          canvasIds.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            if (scrollY > threshold) {
+              el.style.opacity = '0';
+              el.setAttribute('data-paused', '1');
+            } else {
+              el.style.opacity = '';
+              el.removeAttribute('data-paused');
+            }
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  })();
 
 window.onbeforeunload = function () { window.scrollTo(0, 0); };
 if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }

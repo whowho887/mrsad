@@ -20,9 +20,12 @@ export function BentoGrid() {
       className="relative mx-auto max-w-7xl px-6 py-32 md:py-40"
     >
       <SectionHeader
-        eyebrow="02 — ARCHITECTURE"
+        eyebrow="ARCHITECTURE"
+        eyebrowAr="المعمارية"
         title="Seven cores. One sovereign mind."
+        titleAr="سبع نوى. عقل سيادي واحد."
         description="Every layer is custom-built for zero-trust runtime defense. No cloud dependence. No third-party telemetry. Sovereign by design."
+        descriptionAr="كل طبقة مُصمَّمة خصيصاً للدفاع السيادي في وقت التشغيل — بدون اعتماد على السحابة، بدون قياسات طرف ثالث."
       />
 
       <div className="mt-16 grid grid-cols-1 gap-4 md:grid-cols-3 md:grid-rows-[240px_240px_240px] lg:gap-5">
@@ -31,6 +34,7 @@ export function BentoGrid() {
           className="md:row-span-2"
           label="01"
           title="Deep Kernel Sensors"
+          titleAr="مستشعرات النواة العميقة"
           subtitle="eBPF · Runtime Fabric"
           icon={<Cpu className="h-5 w-5" strokeWidth={1.4} />}
         >
@@ -46,6 +50,7 @@ export function BentoGrid() {
           className="md:col-span-2"
           label="02"
           title="Sovereign Event Pipeline"
+          titleAr="خط أحداث سيادي"
           subtitle="Signal Bus · Immutable Log"
           icon={<Radio className="h-5 w-5" strokeWidth={1.4} />}
         >
@@ -56,6 +61,7 @@ export function BentoGrid() {
         <BentoCard
           label="03"
           title="Autonomous Policy Engine"
+          titleAr="محرك السياسات الذاتي"
           subtitle="Decision Matrix"
           icon={<GitBranch className="h-5 w-5" strokeWidth={1.4} />}
         >
@@ -66,6 +72,7 @@ export function BentoGrid() {
         <BentoCard
           label="04"
           title="Response Orchestrator"
+          titleAr="منسق الاستجابة"
           subtitle="Containment · Isolation"
           icon={<Zap className="h-5 w-5" strokeWidth={1.4} />}
         >
@@ -77,6 +84,7 @@ export function BentoGrid() {
           className="md:col-span-2"
           label="05"
           title="Forensic State Engine"
+          titleAr="الحقيبة الجنائية"
           subtitle="Evidence Vault · SEALED"
           icon={<Lock className="h-5 w-5" strokeWidth={1.4} />}
         >
@@ -87,6 +95,7 @@ export function BentoGrid() {
         <BentoCard
           label="06"
           title="Behavioral Intelligence"
+          titleAr="الذكاء السلوكي"
           subtitle="4.2M patterns loaded"
           icon={<Activity className="h-5 w-5" strokeWidth={1.4} />}
         >
@@ -99,12 +108,18 @@ export function BentoGrid() {
 
 function SectionHeader({
   eyebrow,
+  eyebrowAr,
   title,
+  titleAr,
   description,
+  descriptionAr,
 }: {
   eyebrow: string;
+  eyebrowAr?: string;
   title: string;
+  titleAr?: string;
   description: string;
+  descriptionAr?: string;
 }) {
   return (
     <Reveal className="flex flex-col items-start gap-4 md:flex-row md:items-end md:justify-between">
@@ -112,14 +127,38 @@ function SectionHeader({
         <div className="flex items-center gap-3">
           <div className="h-px w-8 bg-cyan/60" />
           <span className="label-mono text-cyan/80">{eyebrow}</span>
+          {eyebrowAr && (
+            <span
+              className="font-arabic text-[11px] text-cyan/50"
+              dir="rtl"
+            >
+              {eyebrowAr}
+            </span>
+          )}
         </div>
-        <h2 className="max-w-2xl text-balance text-[42px] font-semibold leading-[1] tracking-[-0.04em] text-white md:text-[56px]">
+        <h2 className="max-w-2xl text-balance font-display text-[clamp(2.4rem,5vw,3.8rem)] font-normal leading-[1.05] tracking-[-0.025em] text-white">
           {title}
         </h2>
+        {titleAr && (
+          <h3
+            className="font-arabic text-[clamp(1.05rem,2vw,1.5rem)] font-semibold text-cyan/70"
+            dir="rtl"
+          >
+            {titleAr}
+          </h3>
+        )}
       </div>
-      <p className="max-w-md text-[15px] leading-relaxed text-muted">
-        {description}
-      </p>
+      <div className="flex max-w-md flex-col gap-3">
+        <p className="text-[15px] leading-relaxed text-muted">{description}</p>
+        {descriptionAr && (
+          <p
+            className="font-arabic text-[13.5px] leading-[2] text-muted/80"
+            dir="rtl"
+          >
+            {descriptionAr}
+          </p>
+        )}
+      </div>
     </Reveal>
   );
 }
@@ -127,6 +166,7 @@ function SectionHeader({
 function BentoCard({
   label,
   title,
+  titleAr,
   subtitle,
   icon,
   className,
@@ -134,6 +174,7 @@ function BentoCard({
 }: {
   label: string;
   title: string;
+  titleAr?: string;
   subtitle: string;
   icon: React.ReactNode;
   className?: string;
@@ -170,7 +211,17 @@ function BentoCard({
               <span className="text-[15px] font-medium tracking-[-0.02em] text-white">
                 {title}
               </span>
-              <span className="label-mono text-[9.5px]">{subtitle}</span>
+              {titleAr && (
+                <span
+                  className="font-arabic text-[12px] font-semibold text-cyan/60"
+                  dir="rtl"
+                >
+                  {titleAr}
+                </span>
+              )}
+              <span className="label-mono mt-0.5 text-[9.5px]">
+                {subtitle}
+              </span>
             </div>
           </div>
           <span className="label-mono text-white/30">{label}</span>

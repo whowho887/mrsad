@@ -2,6 +2,7 @@ import { Nav } from "@/components/nav";
 import { Hero } from "@/components/hero";
 import { Ticker } from "@/components/ticker";
 import { Doctrine } from "@/components/doctrine";
+import { CinematicReveal } from "@/components/cinematic-reveal";
 import { BentoGrid } from "@/components/bento-grid";
 import { SentinelFeed } from "@/components/sentinel-feed";
 import { CtaBlock } from "@/components/cta-block";
@@ -14,6 +15,7 @@ export default function Home() {
       <Hero />
       <Ticker />
       <Doctrine />
+      <CinematicReveal />
       <BentoGrid />
       <SentinelFeed />
       <CtaBlock />

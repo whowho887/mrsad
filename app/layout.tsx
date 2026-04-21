@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import {
+  Inter_Tight,
+  JetBrains_Mono,
+  Playfair_Display,
+  Noto_Kufi_Arabic,
+  Syne,
+} from "next/font/google";
 import "./globals.css";
 import { LenisProvider } from "@/components/lenis-provider";
 import { FilmGrain } from "@/components/film-grain";
@@ -11,21 +17,45 @@ const interTight = Inter_Tight({
   display: "swap",
 });
 
-const geistMono = JetBrains_Mono({
+const mono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  weight: ["400", "700", "900"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const kufi = Noto_Kufi_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-kufi",
+  weight: ["300", "400", "500", "600", "700", "900"],
+  display: "swap",
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  variable: "--font-syne",
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "MRSAD — Monitoring Runtime Sentinel & Autonomous Defense",
+  title: "MRSAD — مرصاد · منظومة الدفاع الذاتي المستقل",
   description:
-    "The next generation of autonomous runtime defense. A sovereign framework that monitors, decides, and isolates threats with full autonomy.",
+    "الجيل القادم من الدفاع الذاتي وقت التشغيل. منظومة تراقب وتقرر وتعزل التهديدات باستقلالية كاملة — قبل أن تُشنّ الضربة الأولى.",
   keywords: [
     "MRSAD",
+    "مرصاد",
     "runtime security",
     "autonomous defense",
-    "cybersecurity",
+    "الدفاع الذاتي",
+    "الأمن السيبراني",
     "sentinel",
     "SOC",
     "zero-trust",
@@ -33,13 +63,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "MRSAD — Sovereign Runtime Defense",
     description:
-      "Autonomous runtime sentinel. Monitor, decide, isolate — sovereign by design.",
+      "منظومة دفاع ذاتي مستقلة. تراقب وتقرر وتعزل — سيادية بالتصميم.",
     type: "website",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#020202",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -53,13 +83,16 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
-      className={`${interTight.variable} ${geistMono.variable} bg-void`}
+      lang="ar"
+      dir="rtl"
+      className={`${interTight.variable} ${mono.variable} ${playfair.variable} ${kufi.variable} ${syne.variable} bg-void`}
+      suppressHydrationWarning
     >
-      <body className="bg-void text-foreground font-sans antialiased">
-        <LenisProvider>
-          {children}
-        </LenisProvider>
+      <body
+        className="bg-void text-foreground font-sans antialiased"
+        style={{ direction: "ltr" }}
+      >
+        <LenisProvider>{children}</LenisProvider>
         <Vignette />
         <FilmGrain />
       </body>

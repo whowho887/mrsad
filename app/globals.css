@@ -32,9 +32,23 @@
   body {
     background: var(--c-void);
     color: var(--c-chrome);
-    font-family: var(--font-inter-tight), system-ui, sans-serif;
+    font-family: var(--font-inter-tight), var(--font-syne), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+
+  .font-arabic {
+    font-family: var(--font-kufi), "Noto Kufi Arabic", system-ui, sans-serif;
+  }
+  .font-display {
+    font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
+  }
+  .font-syne {
+    font-family: var(--font-syne), system-ui, sans-serif;
+  }
+  .font-mono,
+  .font-mono-tech {
+    font-family: var(--font-mono), ui-monospace, monospace;
   }
 
   ::selection {
@@ -263,4 +277,233 @@
   .mask-fade-r {
     mask-image: linear-gradient(to right, black 70%, transparent 100%);
   }
+  .shadow-cyan-lg {
+    box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.08) inset,
+      0 30px 120px -30px rgba(0, 240, 255, 0.25),
+      0 60px 140px -40px rgba(0, 0, 0, 0.85);
+  }
+}
+
+/* ─────────────────────────────────────────────────────
+   MRSAD — PREMIUM GLITCH SYSTEM
+   Multi-layer RGB split + ghost stroke + periodic tear
+───────────────────────────────────────────────────── */
+.mrsad-glitch {
+  position: relative;
+  display: inline-block;
+  line-height: 0.86;
+  font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  text-shadow: 0 0 60px rgba(0, 240, 255, 0.08);
+}
+
+.mrsad-glitch .mg-main {
+  position: relative;
+  z-index: 3;
+  background: linear-gradient(
+    148deg,
+    #ffffff 6%,
+    #e7faff 26%,
+    #96f1ff 48%,
+    rgba(0, 240, 255, 0.95) 64%,
+    rgba(0, 168, 181, 0.82) 80%,
+    rgba(14, 240, 216, 0.6) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.mrsad-glitch .mg-ghost {
+  position: absolute;
+  inset: 0;
+  -webkit-text-stroke: 1px rgba(0, 240, 255, 0.14);
+  color: transparent;
+  z-index: 2;
+  transform: translate(6px, 6px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.mrsad-glitch .mg-shadow {
+  position: absolute;
+  inset: 0;
+  color: rgba(0, 240, 255, 0.45);
+  filter: blur(48px);
+  opacity: 0.18;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.mrsad-glitch .mg-r,
+.mrsad-glitch .mg-g,
+.mrsad-glitch .mg-b {
+  position: absolute;
+  inset: 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  z-index: 4;
+}
+
+.mrsad-glitch .mg-r {
+  background: linear-gradient(148deg, #ff2a5c 0%, #ff2a5c 100%);
+  animation: mg-r 5.8s steps(1, end) infinite;
+}
+.mrsad-glitch .mg-g {
+  background: linear-gradient(148deg, #00ffa8 0%, #00ffa8 100%);
+  animation: mg-g 5.8s steps(1, end) infinite;
+}
+.mrsad-glitch .mg-b {
+  background: linear-gradient(148deg, #00e0ff 0%, #00e0ff 100%);
+  animation: mg-b 5.8s steps(1, end) infinite;
+}
+
+@keyframes mg-r {
+  0%, 84%, 100% { opacity: 0; transform: translate(0, 0); }
+  85%, 87% { opacity: 0.85; transform: translate(-6px, 1px); }
+  88%, 90% { opacity: 0.45; transform: translate(-2px, -2px); }
+  91%, 93% { opacity: 0.9; transform: translate(-8px, 0); }
+}
+@keyframes mg-g {
+  0%, 84%, 100% { opacity: 0; transform: translate(0, 0); }
+  85%, 87% { opacity: 0.7; transform: translate(3px, -1px); }
+  88%, 90% { opacity: 0.3; transform: translate(1px, 2px); }
+  91%, 93% { opacity: 0.8; transform: translate(4px, 1px); }
+}
+@keyframes mg-b {
+  0%, 84%, 100% { opacity: 0; transform: translate(0, 0); }
+  85%, 87% { opacity: 0.85; transform: translate(6px, 0); }
+  88%, 90% { opacity: 0.4; transform: translate(2px, -1px); }
+  91%, 93% { opacity: 0.9; transform: translate(8px, 2px); }
+}
+
+.mrsad-glitch .mg-tear {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 5;
+  opacity: 0;
+  animation: mg-tear-op 5.8s infinite;
+}
+@keyframes mg-tear-op {
+  0%, 84%, 94%, 100% { opacity: 0; }
+  85%, 93% { opacity: 1; }
+}
+.mrsad-glitch .mg-tear-band {
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  height: 14%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 42, 92, 0.0),
+    rgba(255, 42, 92, 0.7) 40%,
+    rgba(0, 240, 255, 0.8) 60%,
+    rgba(0, 240, 255, 0)
+  );
+  filter: blur(0.4px);
+  animation: mg-band 5.8s steps(1, end) infinite;
+}
+@keyframes mg-band {
+  0%, 84%, 100% { top: -20%; opacity: 0; }
+  85% { top: 12%; opacity: 1; }
+  86% { top: 52%; opacity: 1; }
+  87% { top: 28%; opacity: 1; }
+  88% { top: 72%; opacity: 0.8; }
+  89% { top: 44%; opacity: 1; }
+  90% { top: 18%; opacity: 0.9; }
+  91% { top: 62%; opacity: 1; }
+  92% { top: 36%; opacity: 0.8; }
+  93% { top: 80%; opacity: 0; }
+}
+
+.mrsad-glitch.trigger .mg-r,
+.mrsad-glitch.trigger .mg-g,
+.mrsad-glitch.trigger .mg-b {
+  animation-duration: 0.9s;
+  animation-iteration-count: 1;
+  animation-timing-function: steps(1, end);
+}
+.mrsad-glitch.trigger .mg-r { animation-name: mg-r-burst; }
+.mrsad-glitch.trigger .mg-g { animation-name: mg-g-burst; }
+.mrsad-glitch.trigger .mg-b { animation-name: mg-b-burst; }
+@keyframes mg-r-burst {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  10%, 30%, 60%, 80% { opacity: 0.9; transform: translate(-8px, 1px); }
+  20%, 40%, 70% { opacity: 0.5; transform: translate(-2px, -2px); }
+}
+@keyframes mg-g-burst {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  10%, 30%, 60%, 80% { opacity: 0.7; transform: translate(4px, 1px); }
+  20%, 40%, 70% { opacity: 0.3; transform: translate(1px, -2px); }
+}
+@keyframes mg-b-burst {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  10%, 30%, 60%, 80% { opacity: 0.9; transform: translate(8px, -1px); }
+  20%, 40%, 70% { opacity: 0.4; transform: translate(2px, 2px); }
+}
+
+/* ─────────────────────────────────────────────────────
+   SCANLINE OVERLAY (subtle CRT shimmer on video)
+───────────────────────────────────────────────────── */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0) 2px,
+    rgba(0, 0, 0, 0.28) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.35;
+}
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 240, 255, 0.04) 49%,
+    rgba(0, 240, 255, 0.12) 50%,
+    rgba(0, 240, 255, 0.04) 51%,
+    transparent 100%
+  );
+  animation: scan-sweep 7s linear infinite;
+}
+@keyframes scan-sweep {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* Subtle crt flicker */
+@keyframes crt-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.985; }
+}
+.crt-flicker {
+  animation: crt-flicker 3s ease-in-out infinite;
+}
+
+/* Boot pulse dot */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px currentColor; }
+  50% { opacity: 0.35; box-shadow: 0 0 3px currentColor; }
+}
+.live-pulse {
+  animation: live-pulse 2.2s ease-in-out infinite;
 }

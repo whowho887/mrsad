@@ -96,13 +96,24 @@ export function SentinelFeed() {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <div className="h-px w-8 bg-cyan/60" />
-            <span className="label-mono text-cyan/80">
-              03 — LIVE SECURITY FEED
+            <span className="label-mono text-cyan/80">LIVE SECURITY FEED</span>
+            <span
+              className="font-arabic text-[11px] text-cyan/50"
+              dir="rtl"
+            >
+              تغذية أمنية حيّة
             </span>
           </div>
-          <h2 className="max-w-2xl text-balance text-[42px] font-semibold leading-[1] tracking-[-0.04em] text-white md:text-[56px]">
-            The Sentinel, always watching.
+          <h2 className="max-w-2xl text-balance font-display text-[clamp(2.4rem,5vw,3.8rem)] font-normal leading-[1.05] tracking-[-0.025em] text-white">
+            The <em className="italic text-cyan/85">Sentinel</em>, always
+            watching.
           </h2>
+          <h3
+            className="font-arabic text-[clamp(1.05rem,2vw,1.5rem)] font-semibold text-cyan/70"
+            dir="rtl"
+          >
+            الحارس — لا ينام.
+          </h3>
         </div>
         <div className="flex items-center gap-2 rounded-full border border-status-ok/30 bg-status-ok/5 px-3 py-1.5">
           <span className="relative flex h-1.5 w-1.5">
